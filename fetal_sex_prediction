@@ -1,0 +1,9 @@
+# R Version - R4.4.1
+# Packages
+library(minfi) #version 1.50.0
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19) #version 0.6.1
+library(IlluminaHumanMethylation450kmanifest) #version 0.4.0
+library(magrittr) #version 2.0.3
+library(wateRmelon). #version 2.11.2
+
+#Load Base Directories (each directory should have all red and green IDATs + one sample sheet as a .csv)
