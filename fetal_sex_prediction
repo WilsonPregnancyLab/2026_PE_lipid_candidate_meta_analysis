@@ -1,9 +1,30 @@
 # R Version - R4.4.1
-# Packages
-library(minfi) #version 1.50.0
-library(IlluminaHumanMethylation450kanno.ilmn12.hg19) #version 0.6.1
-library(IlluminaHumanMethylation450kmanifest) #version 0.4.0
-library(magrittr) #version 2.0.3
-library(wateRmelon). #version 2.11.2
+# Packages (Install)
+BiocManager::install("GEOquery", update = F)
+BiocManager::install("minfi", update =F)
+BiocManager::install("IlluminaHumanMethylation450kmanifest", update =F)
+BiocManager::install("IlluminaHumanMethylation450kanno.ilmn12.hg19", update =F)
+BiocManager::install("wateRmelon", update =F)
+
+# Packages (Run)
+library(minfi)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(IlluminaHumanMethylation450kmanifest)
+library(magrittr)
+library(wateRmelon)
 
 #Load Base Directories (each directory should have all red and green IDATs + one sample sheet as a .csv)
+baseDir98224 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE98224_untar_unzip")
+baseDir100197 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE100197_untar_unzip")
+baseDir125605 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE125605_untar_unzip")
+baseDir75196 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE75196_untar_unzip")
+
+#Create targets 
+targets98224 <- read.metharray.sheet(baseDir98224)
+targets100197 <- read.metharray.sheet(baseDir100197)
+targets125605 <- read.metharray.sheet(baseDir125605)
+targets75196 <- read.metharray.sheet(baseDir75196)
+#--> keep getting this weird error "1: In FUN(X[[i]], ...) :
+  Could not infer array name for file: /workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE75196_untar_unzip/GPL13534_HumanMethylation450_15017482_v.1.1.csv"
+#I'm just gonna ignore it
+
