@@ -24,7 +24,11 @@ targets98224 <- read.metharray.sheet(baseDir98224)
 targets100197 <- read.metharray.sheet(baseDir100197)
 targets125605 <- read.metharray.sheet(baseDir125605)
 targets75196 <- read.metharray.sheet(baseDir75196)
-#--> keep getting this weird error "1: In FUN(X[[i]], ...) :
-  Could not infer array name for file: /workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE75196_untar_unzip/GPL13534_HumanMethylation450_15017482_v.1.1.csv"
-#I'm just gonna ignore it
 
+#Sex Prediction - Quality control 
+GSE98224_sexpredict_RGset <- read.metharray.exp(targets = targets98224, verbose = TRUE) #Read idats
+GSE98224_MetSet_raw <- preprocessRaw(GSE98224_sexpredict_RGset)
+GSE98224_GMetSet_raw <- mapToGenome(GSE98224_MetSet_raw)
+GSE98224_sex <- getSex(GSE98224_GMetSet_raw)
+CompareSex98224 <- merge(GSE98224_sex[,c("predictedSex")], GSE98224_metadata_sex[,c("reportedSex")], by = "row.names")
+CompareSex98224$match <- CompareSex98224$predictedSex == CompareSex98224$reportedSex
