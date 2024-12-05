@@ -59,3 +59,19 @@ png("GSE125605_sex_plot.png", width = 800, height = 600)
 GSE125605_sex_plot <- plot(GSE125605_sex$xMed, GSE125605_sex$yMed, main="Scatter_Plot",xlab="x-axis", ylab="y-axis")
 dev.off()
 
+#Exclude samples 
+edit_targets98224 <- subset(targets98224, Excluded !="Excluded")
+edit_targets100197 <- subset(targets100197, Excluded !="Excluded")
+edit_targets125605 <- subset(targets125605, Excluded !="Excluded")
+edit_targets75196 <- subset(targets75196, Excluded !="Excluded")
+# Only had outliers in GSE_100197 where some placentas were IUGR (n=11) and pre-term (n=24)
+
+#Build RG sets
+ 
+RGset100197 <- read.metharray.exp(targets = edit_targets100197, verbose = TRUE)
+RGset125605 <- read.metharray.exp(targets = edit_targets125605, verbose = TRUE)
+
+RGset75196 <- read.metharray.exp(targets = edit_targets75196, verbose = TRUE)
+RGset98224 <- read.metharray.exp(targets = edit_targets98224, verbose = TRUE)
+#had error said no "_Grn.idat"?
+
