@@ -30,5 +30,32 @@ GSE98224_sexpredict_RGset <- read.metharray.exp(targets = targets98224, verbose 
 GSE98224_MetSet_raw <- preprocessRaw(GSE98224_sexpredict_RGset)
 GSE98224_GMetSet_raw <- mapToGenome(GSE98224_MetSet_raw)
 GSE98224_sex <- getSex(GSE98224_GMetSet_raw)
-CompareSex98224 <- merge(GSE98224_sex[,c("predictedSex")], GSE98224_metadata_sex[,c("reportedSex")], by = "row.names")
-CompareSex98224$match <- CompareSex98224$predictedSex == CompareSex98224$reportedSex
+write.csv (GSE98224_sex,"GSE98224_sex.csv")
+# manually compared in excel
+
+GSE100197_sexpredict_RGset <- read.metharray.exp(targets = targets100197, verbose = TRUE) #Read idats
+GSE100197_MetSet_raw <- preprocessRaw(GSE100197_sexpredict_RGset)
+GSE100197_GMetSet_raw <- mapToGenome(GSE100197_MetSet_raw)
+GSE100197_sex <- getSex(GSE100197_GMetSet_raw)
+write.csv (GSE100197_sex,"GSE100197_sex.csv")
+
+GSE75196_sexpredict_RGset <- read.metharray.exp(targets = targets75196, verbose = TRUE) #Read idats
+GSE75196_MetSet_raw <- preprocessRaw(GSE75196_sexpredict_RGset)
+GSE75196_GMetSet_raw <- mapToGenome(GSE75196_MetSet_raw)
+GSE75196_sex <- getSex(GSE75196_GMetSet_raw)
+write.csv (GSE75196_sex,"GSE75196_sex.csv")
+
+GSE125605_sexpredict_RGset <- read.metharray.exp(targets = targets125605, verbose = TRUE) #Read idats
+GSE125605_MetSet_raw <- preprocessRaw(GSE125605_sexpredict_RGset)
+GSE125605_GMetSet_raw <- mapToGenome(GSE125605_MetSet_raw)
+GSE125605_sex <- getSex(GSE125605_GMetSet_raw)
+write.csv (GSE125605_sex,"GSE125605_sex.csv")
+
+#manually compared predicted and reported sex in excel
+
+#plot 
+colnames(GSE125605_sex)
+png("GSE125605_sex_plot.png", width = 800, height = 600)
+GSE125605_sex_plot <- plot(GSE125605_sex$xMed, GSE125605_sex$yMed, main="Scatter_Plot",xlab="x-axis", ylab="y-axis")
+dev.off()
+
