@@ -64,7 +64,7 @@ edit_targets98224 <- subset(targets98224, Excluded !="Excluded")
 edit_targets100197 <- subset(targets100197, Excluded !="Excluded")
 edit_targets125605 <- subset(targets125605, Excluded !="Excluded")
 edit_targets75196 <- subset(targets75196, Excluded !="Excluded")
-# Only had outliers in GSE_100197 where some placentas were IUGR (n=11) and pre-term (n=24)
+# Only had outliers in GSE_100197 where some placentas were IUGR (n=11) and pre-term (n=24) and GSE_125605 where there was no gestational age (n=1)
 
 #Build RG sets
  
