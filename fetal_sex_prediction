@@ -34,8 +34,11 @@ write.csv (GSE98224_sex,"GSE98224_sex.csv")
 # manually compared in excel
 
 GSE100197_sexpredict_RGset <- read.metharray.exp(targets = targets100197, verbose = TRUE) #Read idats
-GSE100197_MetSet_raw <- preprocessRaw(GSE100197_sexpredict_RGset)
+#converts Red/Green channel for an Illumina methylation array into methylation signal w/o normalization
+GSE100197_MetSet_raw <- preprocessRaw(GSE100197_sexpredict_RGset) 
+#uses annotation package to map methylation array data to genome
 GSE100197_GMetSet_raw <- mapToGenome(GSE100197_MetSet_raw)
+#estimates sample sex based on methylation data
 GSE100197_sex <- getSex(GSE100197_GMetSet_raw)
 write.csv (GSE100197_sex,"GSE100197_sex.csv")
 
@@ -58,20 +61,62 @@ colnames(GSE125605_sex)
 png("GSE125605_sex_plot.png", width = 800, height = 600)
 GSE125605_sex_plot <- plot(GSE125605_sex$xMed, GSE125605_sex$yMed, main="Scatter_Plot",xlab="x-axis", ylab="y-axis")
 dev.off()
+#want to try plotSex(getSex(GSE125605_GMetSet_raw, cutoff = -2))
+#to add predicted sex to phenotype data, the following is supposed to work 
+addSex(GSE125605_GMetSet_raw) 
 
 #Exclude samples 
-edit_targets98224 <- subset(targets98224, Excluded !="Excluded")
+edit_targets98224 <- targets98224
 edit_targets100197 <- subset(targets100197, Excluded !="Excluded")
 edit_targets125605 <- subset(targets125605, Excluded !="Excluded")
-edit_targets75196 <- subset(targets75196, Excluded !="Excluded")
-# Only had outliers in GSE_100197 where some placentas were IUGR (n=11) and pre-term (n=24) and GSE_125605 where there was no gestational age (n=1)
+edit_targets75196 <- targets75196
+# Only excluded samples in GSE_100197 where some placentas were IUGR (n=11) and pre-term (n=24) and GSE_125605 where there was no gestational age (n=1)
 
 #Build RG sets
  
 RGset100197 <- read.metharray.exp(targets = edit_targets100197, verbose = TRUE)
 RGset125605 <- read.metharray.exp(targets = edit_targets125605, verbose = TRUE)
-
 RGset75196 <- read.metharray.exp(targets = edit_targets75196, verbose = TRUE)
 RGset98224 <- read.metharray.exp(targets = edit_targets98224, verbose = TRUE)
-#had error said no "_Grn.idat"?
+
+#Combine the RG sets (can only do this two at a time)
+combo_100197_125605 <- combineArrays (RGset100197,RGset125605, outType = c("IlluminaHumanMethylation450k"), verbose = TRUE)
+combo_100197_125605_75196 <- combineArrays (combo_100197_125605,RGset75196, outType = c("IlluminaHumanMethylation450k"), verbose = TRUE)
+combined_RGset <-  combineArrays (combo_100197_125605_75196,RGset98224, outType = c("IlluminaHumanMethylation450k"), verbose = TRUE)
+
+#Check number of probes (type I and type II probes added together = 485,512 for 450K)
+combined_manifest <- getManifest(combined_RGset)
+print(combined_manifest)
+    IlluminaMethylationManifest object
+    Annotation
+      array: IlluminaHumanMethylation450k
+    Number of type I probes: 135476
+    Number of type II probes: 350036
+    Number of control probes: 850
+    Number of SNP type I probes: 25
+    Number of SNP type II probes: 40
+
+#Normalization (adjFunnorm), Background and dye bias correction with noob, mapping to genome, quantile extraction, normalization
+placmet_adjFunnorm <- adjustedFunnorm(combined_RGset)
+
+#Adapted filtering step to keep both autosomal and XY probes
+
+#Filtering bad probes (bad detection p vals or missing betas)
+detp <- minfi::detectionP(combined_RGset)
+number_bad_P_before_Fstrat <- print(sum(rowSums(detp)>=(ncol(combined_RGset))*0.05)) #421
+write.table(detp, sep = "/t", file = "./detp_table.tsv")
+
+## Annotations for X and Y probes
+probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Other, IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Manifest)) 
+probeInfo$probeID <- rownames(probeInfo)
+chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX")
+chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY")
+
+
+
+
+
+
+
+
 
