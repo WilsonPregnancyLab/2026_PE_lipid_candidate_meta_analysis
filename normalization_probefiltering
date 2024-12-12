@@ -99,6 +99,8 @@ placmet_adjFunnorm_HybRemoved <- placmet_adjFunnorm_SNPremoved[!rownames(placmet
 
 # Remove Non-variable placental probes 
 nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") #downloaded from https://github.com/redgar598/Tissue_Nonvariable_450K_CpGs
+#STOPPED HERE
+
 placmet_adjFunnorm_nonvarremoved <- placmet_adjFunnorm_HybRemoved[!rownames(placmet_adjFunnorm_HybRemoved) %in% nonvarplac_anno$CpG,]
 placmet_adjFunnorm_allfiltered <- placmet_adjFunnorm_nonvarremoved
 
