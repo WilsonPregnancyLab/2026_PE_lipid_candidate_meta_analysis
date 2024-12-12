@@ -1,3 +1,10 @@
+# Packages (Run)
+library(minfi)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(IlluminaHumanMethylation450kmanifest)
+library(magrittr)
+library(wateRmelon)
+
 #Exclude samples 
 edit_targets98224 <- subset(targets98224, Excluded !="Excluded")
 edit_targets100197 <- subset(targets100197, Excluded !="Excluded")
