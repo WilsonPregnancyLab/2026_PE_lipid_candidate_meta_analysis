@@ -97,10 +97,11 @@ placmet_adjFunnorm_SNPremoved <- placmet_adjFunnorm_BPfilt[!rownames(placmet_adj
 price_anno_Hyb <- subset(price_anno, price_anno$XY_Hits == "XY_YES" | price_anno$Autosomal_Hits == "A_YES")
 placmet_adjFunnorm_HybRemoved <- placmet_adjFunnorm_SNPremoved[!rownames(placmet_adjFunnorm_SNPremoved) %in% price_anno_Hyb$ID,]
 
-# Remove Non-variable placental probes 
-nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") #downloaded from https://github.com/redgar598/Tissue_Nonvariable_450K_CpGs
-#STOPPED HERE
-
+# Remove Non-variable placental probes, #downloaded from https://github.com/redgar598/Tissue_Nonvariable_450K_CpGs
+library(RCurl)
+x <- getURL("https://raw.githubusercontent.com/redgar598/Tissue_Invariable_450K_CpGs/master/Invariant_Buccal_CpGs.csv")
+write.csv (x,"Invariant_Placenta_CpGs.csv")
+nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") 
 placmet_adjFunnorm_nonvarremoved <- placmet_adjFunnorm_HybRemoved[!rownames(placmet_adjFunnorm_HybRemoved) %in% nonvarplac_anno$CpG,]
 placmet_adjFunnorm_allfiltered <- placmet_adjFunnorm_nonvarremoved
 
