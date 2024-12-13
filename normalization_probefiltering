@@ -50,6 +50,7 @@ print(combined_manifest)
 
 #Normalization (adjFunnorm), Background and dye bias correction with noob, mapping to genome, quantile extraction, normalization
 placmet_adjFunnorm <- adjustedFunnorm(combined_RGset)
+save(placmet_adjFunnorm, file = "placmet_adjFunnorm.RData")
 
 #Adapted filtering step to keep both autosomal and XY probes
 
@@ -99,7 +100,7 @@ placmet_adjFunnorm_HybRemoved <- placmet_adjFunnorm_SNPremoved[!rownames(placmet
 
 # Remove Non-variable placental probes, #downloaded from https://github.com/redgar598/Tissue_Nonvariable_450K_CpGs
 library(RCurl)
-x <- getURL("https://raw.githubusercontent.com/redgar598/Tissue_Invariable_450K_CpGs/master/Invariant_Buccal_CpGs.csv")
+x <- getURL("https://raw.githubusercontent.com/redgar598/Tissue_Invariable_450K_CpGs/master/Invariant_Placenta_CpGs.csv")
 write.csv (x,"Invariant_Placenta_CpGs.csv")
 nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") 
 placmet_adjFunnorm_nonvarremoved <- placmet_adjFunnorm_HybRemoved[!rownames(placmet_adjFunnorm_HybRemoved) %in% nonvarplac_anno$CpG,]
