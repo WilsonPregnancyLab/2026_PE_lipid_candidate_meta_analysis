@@ -50,14 +50,14 @@ print(combined_manifest)
 
 #Normalization (adjFunnorm), Background and dye bias correction with noob, mapping to genome, quantile extraction, normalization
 placmet_adjFunnorm <- adjustedFunnorm(combined_RGset)
-save(placmet_adjFunnorm, file = "placmet_adjFunnorm.RData")
+saveRDS(placmet_adjFunnorm, file = "placmet_adjFunnorm.RDS")
 
 #Adapted filtering step to keep both autosomal and XY probes
 
 #Filtering bad probes (bad detection p vals or missing betas)
 detp <- minfi::detectionP(combined_RGset)
 number_bad_P_before_Fstrat <- print(sum(rowSums(detp)>=(ncol(combined_RGset))*0.05)) #421
-write.table(detp, sep = "/t", file = "./detp_table.tsv")
+write.csv(detp, "detp_table.csv")
 
 ## Annotations for X and Y probes
 BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19", update = F)
@@ -67,16 +67,28 @@ probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::
 probeInfo$probeID <- rownames(probeInfo)
 chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX")
 chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY")
-metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia.csv")
-males <- subset(metadata, metadata$fetal_sex == "M")
-females <- subset(metadata, metadata$fetal_sex == "F")
+metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+males <- subset(metadata, metadata$Fetal_Sex == "M")
+females <- subset(metadata, metadata$Fetal_Sex == "F")
 ## For females, set detp in Y chromosomes to 0 (these probes do not bind to anything in female samples)
 detp[rownames(detp) %in% chrYprobes$probeID, females$Sample_Name] <- 0
 head(detp[rownames(detp) %in% chrYprobes$probeID, females$Sample_Name]) #Make sure all 0
-     <0 x 0 matrix>
+                        GSM1944959_9376561070_R05C01 GSM1944960_9376561070_R06C01
+         cg00212031                            0                            0
+         cg00213748                            0                            0
+         cg00214611                            0                            0
+         cg00455876                            0                            0
+         cg01707559                            0                            0
+         cg02004872                            0                            0
+                    GSM1944966_9376561070_R06C02
+         cg00212031                            0                                     cg00213748                            0
+         cg00214611                            0
+         cg00455876                            0
+         cg01707559                            0
+         cg02004872                            0
 bad_detp <- detp > 0.01
 #running bad probes
-number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #883
+number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #855
 # missing betas >5% of samples 
 avgbeta <- getBeta(combined_RGset)
 bad_beta <- is.na(avgbeta)
@@ -85,7 +97,7 @@ number_bad_beta <- print(sum(rowSums(bad_beta)>=(ncol(combined_RGset))*0.05)) #1
 badProbes <- rowSums(bad_detp)>=(ncol(combined_RGset))*0.05 | rowSums(bad_beta)>=(ncol(combined_RGset))*0.05 
 badProbes1 <- as.data.frame(badProbes) 
 #rowSums function below didn't work on badProbes because it's a vector so turned it into a dataframe
-number_badprobes <- print(sum(rowSums(badProbes1, na.rm = TRUE))) #883
+number_badprobes <- print(sum(rowSums(badProbes1, na.rm = TRUE))) #855
 placmet_adjFunnorm_BPfilt <- placmet_adjFunnorm[!badProbes,]
 
 # Remove SNP probes
@@ -106,7 +118,7 @@ nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Inva
 placmet_adjFunnorm_nonvarremoved <- placmet_adjFunnorm_HybRemoved[!rownames(placmet_adjFunnorm_HybRemoved) %in% nonvarplac_anno$CpG,]
 placmet_adjFunnorm_allfiltered <- placmet_adjFunnorm_nonvarremoved
 
-
+saveRDS(placmet_adjFunnorm_allfiltered, "placmet_adjFunnorm_allfiltered.rds")
 
 
 
