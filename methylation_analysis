@@ -1,0 +1,81 @@
+# Packages (Run)
+library(limma) #version 3.60.4
+library(lumi) #version 2.56.0
+library(stringr) #version 1.5.1
+library(ggplot2) #version 3.5.1
+library(gridExtra) #version 2.3
+library(ggrepel) #version 0.9.5
+library(minfi)
+
+#Creating groups for sex stratification
+metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+metadata$pathology_group <- as.factor(metadata$pathology_group)
+metadata$Fetal_Sex <- as.factor(metadata$Fetal_Sex)
+metadata$Sentrix_ID <- as.factor(metadata$Sentrix_ID)
+metadata$Sentrix_Position <- as.factor(metadata$Sentrix_Position)
+metadata$GSE_number <- as.factor(metadata$GSE_number)
+metadata$geo_accession <- as.factor(metadata$geo_accession)
+metadata$gestational_age <- as.factor(metadata$gestational_age)
+
+males <- subset(metadata, Fetal_Sex == "M")
+males$pathology_group <- as.factor(males$pathology_group)
+males$Fetal_Sex <- as.factor(males$Fetal_Sex)
+males$Sentrix_ID <- as.factor(males$Sentrix_ID)
+males$Sentrix_ID <- droplevels(males$Sentrix_ID)
+males$Sentrix_Position <- as.factor(males$Sentrix_Position)
+males$GSE_number <- as.factor(males$GSE_number)
+
+females <- subset(metadata, Fetal_Sex == "F")
+females$pathology_group <- as.factor(females$pathology_group)
+females$Fetal_Sex <- as.factor(females$Fetal_Sex)
+females$Sentrix_ID <- as.factor(females$Sentrix_ID)
+females$Sentrix_ID <- droplevels(females$Sentrix_ID)
+females$Sentrix_Position <- as.factor(females$Sentrix_Position)
+females$GSE_number <- as.factor(females$GSE_number)
+
+placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds")
+placmet_adjFunnorm_filtbetas <- getBeta(placmet_adjFunnorm_allfiltered)
+placmet_filtfun_F <- placmet_adjFunnorm_filtbetas[, females$Sample_Name]
+num_females <- nrow(females)
+print(num_females) 
+# 65 females - gives all the GSMs in either IVF or spont that are female
+placmet_filtfun_M <- placmet_adjFunnorm_filtbetas[, males$Sample_Name]
+num_males <- nrow(males)
+print(num_males) 
+# 74 males - gives all the GSMs in either IVF or spont that are male 
+
+#Calculating the average Delta Beta values between Control and PE 
+Controlmetadata_all <- subset(metadata, metadata$pathology_group == "Control")
+con_a_num <- nrow(Controlmetadata_all)
+print(con_a_num)  
+Controlmetadata_F <- subset(females, females$pathology_group == "Control")
+con_F_num <- nrow(Controlmetadata_F)
+print(con_F_num)
+Controlmetadata_M <- subset(males, males$pathology_group == "Control")
+con_M_num <- nrow(Controlmetadata_M)
+print(con_M_num)   
+# 80 control all (both males and females)
+# 29 control females 
+# 32 control males
+PEmetadata_all <- subset(metadata, metadata$pathology_group == "PE")
+PEmetadata_F <- subset(females, females$pathology_group == "PE")
+PEmetadata_M <- subset(males, males$pathology_group == "PE")
+# 96 PE all
+# 40 PE females 
+# 56 PE males
+
+#Probe annotations 
+probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, 
+                                 IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Other, 
+                                 IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Manifest)) 
+probeInfo$probeID <- rownames(probeInfo)
+chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX") #19090 probes
+chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY") #537 probes
+
+
+
+
+
+
+
+
