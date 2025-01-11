@@ -92,7 +92,7 @@ head(detp[rownames(detp) %in% chrYprobes$probeID, females$Sample_Name]) #Make su
          cg02004872                            0
 bad_detp <- detp > 0.01
 #running bad probes
-number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #855
+number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #592
 # missing betas >5% of samples 
 avgbeta <- getBeta(combined_RGset)
 bad_beta <- is.na(avgbeta)
@@ -101,7 +101,7 @@ number_bad_beta <- print(sum(rowSums(bad_beta)>=(ncol(combined_RGset))*0.05)) #1
 badProbes <- rowSums(bad_detp)>=(ncol(combined_RGset))*0.05 | rowSums(bad_beta)>=(ncol(combined_RGset))*0.05 
 badProbes1 <- as.data.frame(badProbes) 
 #rowSums function below didn't work on badProbes because it's a vector so turned it into a dataframe
-number_badprobes <- print(sum(rowSums(badProbes1, na.rm = TRUE))) #855
+number_badprobes <- print(sum(rowSums(badProbes1, na.rm = TRUE))) #593
 placmet_adjFunnorm_BPfilt <- placmet_adjFunnorm[!badProbes,]
 
 # Remove SNP probes
