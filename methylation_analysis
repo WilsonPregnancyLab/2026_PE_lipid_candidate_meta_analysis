@@ -17,6 +17,7 @@ lipid_gene_probes_old <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_
 write.csv(lipid_gene_probes_old, "lipid_gene_probes_old.csv") #71977 probes
 lipid_gene_probes <- merge(lipid_gene_probes_old, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
 write.csv(lipid_gene_probes, "lipid_gene_probes.csv")
+lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
 
 #Creating groups for sex stratification
 metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
@@ -186,7 +187,23 @@ Mval_female_auto <- Mval_female[!rownames(Mval_female) %in% c(chrXprobes$ID,chrY
 #female XChr 
 Mval_female_X <- Mval_female[rownames(Mval_female) %in% chrXprobes$ID,]
 
-
+#LINEAR MODELING
+#whole population autosomes
+library(limma)
+CONTvsPE_wholemodel_auto <- model.matrix(~ pathology_group + Fetal_Sex + GSE_number + gestational_age, data = metadata) 
+CONTvsPE_wholefit_auto <- lmFit(Mval_whole_auto, CONTvsPE_wholemodel_auto)
+CONTvsPE_wholefit_auto <- eBayes(CONTvsPE_wholefit_auto)
+tt_CONTvsPE_whole_auto <- topTable(CONTvsPE_wholefit_auto, n = Inf, adjust = "fdr", coef = "pathology_groupControl")
+print(sum(tt_CONTvsPE_whole_auto$adj.P.Val < 0.05)) #8341
+names(price_anno)[which(names(price_anno) == "SPOT_ID")] <- "probes"
+tt_CONTvsPE_whole_auto$probes <- rownames(tt_CONTvsPE_whole_auto)
+names(placmet_AllAvgbetas_autosomes)[which(names(placmet_AllAvgbetas_autosomes) == "ProbeCONT")] <- "probes"
+tt_CONTvsPE_whole_auto$probes <- as.factor(tt_CONTvsPE_whole_auto$probes)
+placmet_AllAvgbetas_autosomes$probes <- as.factor(placmet_AllAvgbetas_autosomes$probes)
+placmet_wholepop_auto <- merge(merge(tt_CONTvsPE_whole_auto, placmet_AllAvgbetas_autosomes[, c("deltaB","probes")], by = "probes"),
+                               price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
+write.csv(tt_CONTvsPE_whole_auto, "./tt_CONTvsPE_whole_auto_study.csv")
+write.csv(placmet_wholepop_auto, "./placmet_wholepop_auto_study.csv")
 
 
 
