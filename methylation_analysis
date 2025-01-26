@@ -47,7 +47,7 @@ females$GSE_number <- as.factor(females$GSE_number)
 
 placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds")
 placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
-placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,]
+placmet_adjFunnorm_filtbetas_NA <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,]
 placmet_adjFunnorm_filtfun_F <- placmet_adjFunnorm_filtbetas[, females$Sample_Name]
 # 87 females - gives all the GSMs in either Control or PE that are female 
 placmet_adjFunnorm_filtfun_M <- placmet_adjFunnorm_filtbetas[, males$Sample_Name]
