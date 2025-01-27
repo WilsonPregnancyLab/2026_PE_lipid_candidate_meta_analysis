@@ -6,6 +6,7 @@ library(ggplot2) #version 3.5.1
 library(gridExtra) #version 2.3
 library(ggrepel) #version 0.9.5
 library(minfi)
+library(wateRmelon)
 
 library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, 
@@ -18,6 +19,12 @@ write.csv(lipid_gene_probes_old, "lipid_gene_probes_old.csv") #71977 probes
 lipid_gene_probes <- merge(lipid_gene_probes_old, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
 write.csv(lipid_gene_probes, "lipid_gene_probes.csv")
 lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
+
+#Probe annotations 
+
+chrXprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrX") #1244 probes
+chrYprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrY") #1 probes
+NAprobes <- subset(lipid_gene_probes, is.na(lipid_gene_probes$chr)) #4881 probes
 
 #Creating groups for sex stratification
 metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
@@ -45,9 +52,9 @@ females$Sentrix_ID <- droplevels(females$Sentrix_ID)
 females$Sentrix_Position <- as.factor(females$Sentrix_Position)
 females$GSE_number <- as.factor(females$GSE_number)
 
-placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds")
+placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
 placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
-placmet_adjFunnorm_filtbetas_NA <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,]
+placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,] #dim 49220 180
 placmet_adjFunnorm_filtfun_F <- placmet_adjFunnorm_filtbetas[, females$Sample_Name]
 # 87 females - gives all the GSMs in either Control or PE that are female 
 placmet_adjFunnorm_filtfun_M <- placmet_adjFunnorm_filtbetas[, males$Sample_Name]
@@ -66,12 +73,6 @@ PEmetadata_M <- subset(males, males$pathology_group == "PE")
 # 100 PE all
 # 48 PE females 
 # 52 PE males
-
-#Probe annotations 
-
-chrXprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrX") #1244 probes
-chrYprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrY") #1 probes
-NAprobes <- subset(lipid_gene_probes, is.na(lipid_gene_probes$chr)) #4881 probes
 
 # Total population Betas table 
 # Autosomal Only Probes included for Beta Table
@@ -164,18 +165,22 @@ write.csv(placmet_FemaleAvgbetas_X, "./placmet_FemaleAvgbetas_X.csv")
 
 #m value inputs for linear models 
 #Whole population 
-placmet_adjFunnorm_MVal <- beta2m(placmet_adjFunnorm_filtbetas)
+placmet_adjFunnorm_MVal <- beta2m(placmet_adjFunnorm_filtbetas) #dim 49220, 180
 write.csv(placmet_adjFunnorm_MVal, "./placmet_adjFunnorm_MVal.csv")
 #whole population Mvalues - Autosomes
 Mval_whole_auto <- placmet_adjFunnorm_MVal[!rownames(placmet_adjFunnorm_MVal) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID),] #44637, 180
+write.csv(Mval_whole_auto, "./Mval_whole_auto.csv")
 
 #Male Population Mvalues 
 Mval_male <- beta2m(placmet_adjFunnorm_filtfun_M)
 write.csv(Mval_male, "./MVal_male.csv")
 #male autosomes
 Mval_male_auto <- Mval_male[!rownames(Mval_male) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID),] #44637, 93
+write.csv(Mval_male_auto, "./Mval_male_auto.csv")
 #male XChr
 Mval_male_X <- Mval_male[rownames(Mval_male) %in% chrXprobes$ID,]
+write.csv(Mval_male_X, "./Mval_male_X.csv")
+
 #male Ychr
 Mval_male_Y <- Mval_male[rownames(Mval_male) %in% chrYprobes$ID,]
 
@@ -184,17 +189,19 @@ Mval_female <- beta2m(placmet_adjFunnorm_filtfun_F)
 write.csv(Mval_female, "./MVal_female.csv")
 #female autosomes 
 Mval_female_auto <- Mval_female[!rownames(Mval_female) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID),] #44637, 87
+write.csv(Mval_female_auto, "./Mval_female_auto.csv")
 #female XChr 
 Mval_female_X <- Mval_female[rownames(Mval_female) %in% chrXprobes$ID,]
+write.csv(Mval_female_X, "./Mval_female_X.csv")
 
 #LINEAR MODELING
 #whole population autosomes
-library(limma)
+
 CONTvsPE_wholemodel_auto <- model.matrix(~ pathology_group + Fetal_Sex + GSE_number + gestational_age, data = metadata) 
 CONTvsPE_wholefit_auto <- lmFit(Mval_whole_auto, CONTvsPE_wholemodel_auto)
-CONTvsPE_wholefit_auto <- eBayes(CONTvsPE_wholefit_auto)
-tt_CONTvsPE_whole_auto <- topTable(CONTvsPE_wholefit_auto, n = Inf, adjust = "fdr", coef = "pathology_groupControl")
-print(sum(tt_CONTvsPE_whole_auto$adj.P.Val < 0.05)) #8341
+CONTvsPE_wholefit_auto <- eBayes(CONTvsPE_wholefit_auto) #dim 44637, 22
+tt_CONTvsPE_whole_auto <- topTable(CONTvsPE_wholefit_auto, n = Inf, adjust = "fdr", coef = "pathology_groupPE")
+print(sum(tt_CONTvsPE_whole_auto$adj.P.Val < 0.05)) #1993
 names(price_anno)[which(names(price_anno) == "SPOT_ID")] <- "probes"
 tt_CONTvsPE_whole_auto$probes <- rownames(tt_CONTvsPE_whole_auto)
 names(placmet_AllAvgbetas_autosomes)[which(names(placmet_AllAvgbetas_autosomes) == "ProbeCONT")] <- "probes"
@@ -204,6 +211,200 @@ placmet_wholepop_auto <- merge(merge(tt_CONTvsPE_whole_auto, placmet_AllAvgbetas
                                price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
 write.csv(tt_CONTvsPE_whole_auto, "./tt_CONTvsPE_whole_auto_study.csv")
 write.csv(placmet_wholepop_auto, "./placmet_wholepop_auto_study.csv")
+auto_sig <- subset(placmet_wholepop_auto[placmet_wholepop_auto$adj.P.Val <0.05,]) #1993
+write.csv(auto_sig, file = "./Sig_all_autosomes_CONTvsPE_adjFunnorm.csv")
+
+#male autosomes
+CONTvsPE_modelM <- model.matrix(~ pathology_group + GSE_number + gestational_age, data = males)
+CONTvsPE_fitM_auto <- lmFit(Mval_male_auto, CONTvsPE_modelM) #warning: Partial NA coefficients for 1 probe(s)
+CONTvsPE_fitM_auto <- eBayes(CONTvsPE_fitM_auto)
+tt_CONTvsPE_M_all_auto <- topTable(CONTvsPE_fitM_auto, n = Inf, adjust = "fdr", coef = "pathology_groupPE")
+print(sum(tt_CONTvsPE_M_all_auto$adj.P.Val < 0.05)) #42
+tt_CONTvsPE_M_all_auto$probes <- rownames(tt_CONTvsPE_M_all_auto)
+names(placmet_MaleAvgbetas_autosomes)[which(names(placmet_MaleAvgbetas_autosomes) == "ProbeCONT")] <- "probes"
+tt_CONTvsPE_M_all_auto$probes <- as.factor(tt_CONTvsPE_M_all_auto$probes)
+placmet_MaleAvgbetas_autosomes$probes <- as.factor(placmet_MaleAvgbetas_autosomes$probes)
+placmet_M_fulldata_auto <- merge(merge(tt_CONTvsPE_M_all_auto, placmet_MaleAvgbetas_autosomes[, c("deltaB","probes")], by = "probes"),
+                                 price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
+write.csv(tt_CONTvsPE_M_all_auto, "./tt_CONTvsPE_M_all_auto_study.csv")
+write.csv(placmet_M_fulldata_auto, "./placmet_M_fulldata_auto_study.csv")
+maleauto_sig <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$adj.P.Val <0.05,]) #42
+write.csv(maleauto_sig, file = "./Sig_Male_autosomes_CONTvsPE_adjFunnorm.csv")
+
+#male X 
+CONTvsPE_fitM_X <- lmFit(Mval_male_X, CONTvsPE_modelM) 
+CONTvsPE_fitM_X <- eBayes(CONTvsPE_fitM_X)
+tt_CONTvsPE_M_X <- topTable(CONTvsPE_fitM_X, n = Inf, adjust = "fdr", coef = "pathology_groupPE")
+print(sum(tt_CONTvsPE_M_X$adj.P.Val < 0.05)) #0
+tt_CONTvsPE_M_X$probes <- rownames(tt_CONTvsPE_M_X)
+names(placmet_MaleAvgbetas_X)[which(names(placmet_MaleAvgbetas_X) == "ProbeCONT")] <- "probes"
+tt_CONTvsPE_M_X$probes <- as.factor(tt_CONTvsPE_M_X$probes)
+placmet_MaleAvgbetas_X$probes <- as.factor(placmet_MaleAvgbetas_X$probes)
+placmet_M_fulldata_X <- merge(merge(tt_CONTvsPE_M_X, placmet_MaleAvgbetas_X[, c("deltaB","probes")], by = "probes"),
+                              price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
+write.csv(tt_CONTvsPE_M_X, "./tt_CONTvsPE_M_X_study.csv")
+write.csv(placmet_M_fulldata_X, "./placmet_M_fulldata_X_study.csv")
+
+#Female Autosomes 
+CONTvsPE_modelF <- model.matrix(~ pathology_group + GSE_number + gestational_age, data = females)
+CONTvsPE_fitF_auto <- lmFit(Mval_female_auto, CONTvsPE_modelF) 
+CONTvsPE_fitF_auto <- eBayes(CONTvsPE_fitF_auto)
+tt_CONTvsPE_F_all_auto <- topTable(CONTvsPE_fitF_auto, n = Inf, adjust = "fdr", coef = "pathology_groupPE")
+print(sum(tt_CONTvsPE_F_all_auto$adj.P.Val < 0.05)) #97
+tt_CONTvsPE_F_all_auto$probes <- rownames(tt_CONTvsPE_F_all_auto)
+names(placmet_FemaleAvgbetas_autosomes)[which(names(placmet_FemaleAvgbetas_autosomes) == "ProbeCONT")] <- "probes"
+tt_CONTvsPE_F_all_auto$probes <- as.factor(tt_CONTvsPE_F_all_auto$probes)
+placmet_FemaleAvgbetas_autosomes$probes <- as.factor(placmet_FemaleAvgbetas_autosomes$probes)
+placmet_F_fulldata_auto <- merge(merge(tt_CONTvsPE_F_all_auto, placmet_FemaleAvgbetas_autosomes[, c("deltaB","probes")], by = "probes"),
+                                 price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
+write.csv(tt_CONTvsPE_F_all_auto, "./tt_CONTvsPE_F_all_auto_study.csv")
+write.csv(placmet_F_fulldata_auto, "./placmet_F_fulldata_auto_study.csv")
+femaleauto_sig <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$adj.P.Val <0.05,])
+
+#Female X
+CONTvsPE_fitF_X <- lmFit(Mval_female_X, CONTvsPE_modelF) 
+CONTvsPE_fitF_X <- eBayes(CONTvsPE_fitF_X)
+tt_CONTvsPE_F_X <- topTable(CONTvsPE_fitF_X, n = Inf, adjust = "fdr", coef = "pathology_groupPE")
+print(sum(tt_CONTvsPE_F_X$adj.P.Val < 0.05)) #0
+tt_CONTvsPE_F_X$probes <- rownames(tt_CONTvsPE_F_X)
+names(placmet_FemaleAvgbetas_X)[which(names(placmet_FemaleAvgbetas_X) == "ProbeCONT")] <- "probes"
+tt_CONTvsPE_F_X$probes <- as.factor(tt_CONTvsPE_F_X$probes)
+placmet_FemaleAvgbetas_X$probes <- as.factor(placmet_FemaleAvgbetas_X$probes)
+placmet_F_fulldata_X <- merge(merge(tt_CONTvsPE_F_X, placmet_FemaleAvgbetas_X[, c("deltaB","probes")], by = "probes"),
+                              price_anno[,c("Closest_TSS_gene_name", "probes")], by = "probes")
+write.csv(tt_CONTvsPE_F_X, "./tt_CONTvsPE_F_X_study.csv")
+write.csv(placmet_F_fulldata_X, "./placmet_F_fulldata_X_study.csv")
+
+
+placmet_wholepop_auto <- read.csv ("placmet_wholepop_auto.csv")
+placmet_M_fulldata_auto <- read.csv("placmet_M_fulldata_auto.csv")
+placmet_M_fulldata_X <- read.csv("placmet_M_fulldata_X.csv")
+placmet_F_fulldata_auto <- read.csv("placmet_F_fulldata_auto.csv")
+placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
+femaleauto_sig <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$adj.P.Val <0.05,]) #97
+maleauto_sig <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$adj.P.Val <0.05,]) #42
+
+#Plotting 
+#Adding diff methylation information for colouring 
+#Whole data 
+placmet_wholepop_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB > 0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB < -0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Hypo-methylated"
+#Male data 
+placmet_M_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB > 0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB < -0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Hypo-methylated"
+placmet_M_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
+placmet_M_fulldata_X$diffmethylation[placmet_M_fulldata_X$deltaB > 0.05 & placmet_M_fulldata_X$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_M_fulldata_X$diffmethylation[placmet_M_fulldata_X$deltaB < -0.05 & placmet_M_fulldata_X$adj.P.Val <0.05] <- "Hypo-methylated"
+#Female Data 
+placmet_F_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB > 0.05 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB < -0.05 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Hypo-methylated"
+placmet_F_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
+placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB > 0.05 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB < -0.05 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Hypo-methylated"
+
+#Volcano Plots
+black", "#FFA6C9"- salmon (pink-hypermethylated), "#AF69EE"-orchid (purple-hypomethylated)
+
+wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.3, size = 3) + 
+  theme_bw() +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  ylab("-log10(adjusted P.Value)") +
+  xlab("Delta Beta") + 
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
+  scale_color_manual(values = c("#FFA6C9", "#AF69EE", "black"), 
+                     labels = c("Not_Biologically_Significant","Hypo-Methylated", "Hyper-methylated"),
+                     guide = "none")
+placmet_M_fulldata_auto$siglabel <- ifelse(placmet_M_fulldata_auto$probes %in% male_auto_sig$probes, placmet_M_fulldata_auto$Closest_TSS_gene_name, NA)
+male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.4, size = 3) + 
+  geom_text_repel(max.overlaps = Inf,
+                  segment.size = 0.5) +
+  theme_bw() +
+  ylab(" ") +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  xlab("Delta Beta") +
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
+  scale_color_manual(values = c("#FFA6C9", "black", "#AF69EE"), 
+                     labels = c("Not_Biologically_Significant", "Hyper-methylated", "Hypo-methylated"),
+                     guide = "none")
+placmet_F_fulldata_auto$siglabel <- ifelse(placmet_F_fulldata_auto$probes %in% female_auto_sig$probes, placmet_F_fulldata_auto$Closest_TSS_gene_name, NA)
+female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.4, size = 3) + 
+  theme_bw() +
+  ylab(" ") +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  xlab("Delta Beta") +
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
+  scale_color_manual(values = c("#FFA6C9", "black", "#AF69EE"), 
+                     labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
+                     guide = "none")
+png("./autosome_vol_adjFunnorm_panel.png", height = 9, width = 16, units = "in", res = 300)
+grid.arrange(wholepop_auto, female_auto, male_auto, nrow = 1)
+#Warning messages:
+  1: Removed 1 row containing missing values or values outside the scale range(`geom_point()`).
+  2: Removed 44595 rows containing missing values or values outside the scale
+  range (`geom_text_repel()`).
+dev.off()
+
+#plots of X chromosome 
+male_X <- ggplot(data = placmet_M_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.4, size = 3) +
+  geom_text_repel(max.overlaps = Inf) +
+  theme_bw() +
+  ylab("-log10(adjusted P.Value)") +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  xlab("Delta Beta") +
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
+                     limits = c(-0.30,0.30), 
+                     labels = label_number(accuracy = 0.1))  +
+  scale_color_manual(values = c("#FFA6C9", "#AF69EE", "black"), 
+                     labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
+                     guide = "none")
+
+female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.4, size = 3) +
+  theme_bw() +
+  ylab(" ") +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  xlab("Delta Beta") +
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
+                     limits = c(-0.30,0.30), 
+                     labels = label_number(accuracy = 0.1)) +
+  scale_color_manual(values = c("#FFA6C9", "#AF69EE", "black"), 
+                     labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
+                     guide = "none")
+png("./X_vol_adjFunnorm_panel.png", height = 9, width = 10, units = "in", res = 300)
+grid.arrange(female_X, male_X, nrow = 1)
+dev.off()
+
+
+
+
+
 
 
 
