@@ -15,5 +15,21 @@ library("TxDb.Hsapiens.UCSC.hg19.knownGene") #version 3.2.2
 library(EnsDb.Hsapiens.v75) #version 2.99.0
 library(Homo.sapiens) #version 1.3.1
 
+placmet_wholepop_auto <- read.csv ("placmet_wholepop_auto.csv")
+placmet_M_fulldata_auto <- read.csv("placmet_M_fulldata_auto.csv")
+placmet_M_fulldata_X <- read.csv("placmet_M_fulldata_X.csv")
+placmet_F_fulldata_auto <- read.csv("placmet_F_fulldata_auto.csv")
+placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
-  
+#Beta Values density plot
+png(filename = "./beta_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_wholepop_auto$B), col = "#F7D56E", lwd = 3,xlim = c(-7,10), ylim = c(0, 5), 
+     xlab = "Beta Value (N = 305160 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
+  lines(density(placmet_M_fulldata_auto$B), col = "#8EC9FF",lwd = 3) +
+  lines(density(placmet_F_fulldata_auto$B), col = "#E67000", lwd = 3) +
+  lines(density(placmet_M_fulldata_X$B), col = "#0060B5", lwd = 3) +
+  lines(density(placmet_F_fulldata_X$B), col = "#FFA6C9", lwd = 3) 
+legend("topright", legend = c("All Autosomes", "Male Autosomes", "Female Autosomes", "Male X Chr", "Female X Chr"),
+       col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5", "#FFA6C9"),
+       lwd = 3, bty = "n", cex = 1.2)
+dev.off()
