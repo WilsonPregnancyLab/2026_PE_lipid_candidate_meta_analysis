@@ -21,15 +21,95 @@ placmet_M_fulldata_X <- read.csv("placmet_M_fulldata_X.csv")
 placmet_F_fulldata_auto <- read.csv("placmet_F_fulldata_auto.csv")
 placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
-#Beta Values density plot
-png(filename = "./beta_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_wholepop_auto$B), col = "#F7D56E", lwd = 3,xlim = c(-7,10), ylim = c(0, 5), 
-     xlab = "Beta Value (N = 305160 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
-  lines(density(placmet_M_fulldata_auto$B), col = "#8EC9FF",lwd = 3) +
-  lines(density(placmet_F_fulldata_auto$B), col = "#E67000", lwd = 3) +
-  lines(density(placmet_M_fulldata_X$B), col = "#0060B5", lwd = 3) +
-  lines(density(placmet_F_fulldata_X$B), col = "#FFA6C9", lwd = 3) 
+#adj p-Values density plot
+png(filename = "./adjPval_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_wholepop_auto$adj.P.Val), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 5), 
+     xlab = "Adjusted P-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
+  lines(density(placmet_M_fulldata_auto$adj.P.Val), col = "#8EC9FF",lwd = 3) +
+  lines(density(placmet_F_fulldata_auto$adj.P.Val), col = "#E67000", lwd = 3) +
+  lines(density(placmet_M_fulldata_X$adj.P.Val), col = "#0060B5", lwd = 3) +
+  lines(density(placmet_F_fulldata_X$adj.P.Val), col = "#FFA6C9", lwd = 3) 
 legend("topright", legend = c("All Autosomes", "Male Autosomes", "Female Autosomes", "Male X Chr", "Female X Chr"),
        col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5", "#FFA6C9"),
+       lwd = 3, bty = "n", cex = 1.2)
+dev.off()
+
+# P Values density plot
+png(filename = "./Pval_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_wholepop_auto$P.Value), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 5), 
+     xlab = "P-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
+  lines(density(placmet_M_fulldata_auto$P.Value), col = "#8EC9FF",lwd = 3) +
+  lines(density(placmet_F_fulldata_auto$P.Value), col = "#E67000", lwd = 3) +
+  lines(density(placmet_M_fulldata_X$P.Value), col = "#0060B5", lwd = 3) +
+  lines(density(placmet_F_fulldata_X$P.Value), col = "#FFA6C9", lwd = 3) 
+legend("topright", legend = c("All Autosomes", "Male Autosomes", "Female Autosomes", "Male X Chr", "Female X Chr"),
+       col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5", "#FFA6C9"),
+       lwd = 3, bty = "n", cex = 1.2)
+dev.off()
+
+# delta-beta density plot
+png(filename = "./deltaB_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_wholepop_auto$deltaB), col = "#F7D56E", lwd = 3,xlim = c(-0.01, 0.16), ylim = c(0, 60), 
+     xlab = "Delta Beta (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
+  lines(density(placmet_M_fulldata_auto$deltaB), col = "#8EC9FF",lwd = 3) +
+  lines(density(placmet_F_fulldata_auto$deltaB), col = "#E67000", lwd = 3) +
+  lines(density(placmet_M_fulldata_X$deltaB), col = "#0060B5", lwd = 3) +
+  lines(density(placmet_F_fulldata_X$deltaB), col = "#FFA6C9", lwd = 3) 
+legend("topright", legend = c("All Autosomes", "Male Autosomes", "Female Autosomes", "Male X Chr", "Female X Chr"),
+       col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5", "#FFA6C9"),
+       lwd = 3, bty = "n", cex = 1.2)
+dev.off()
+
+#beta-value density plot
+
+placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
+placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
+lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
+placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,] #dim 49220 180
+metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+metadata$pathology_group <- as.factor(metadata$pathology_group)
+Controlmetadata_all <- subset(metadata, metadata$pathology_group == "Control") 
+PEmetadata_all <- subset(metadata, metadata$pathology_group == "PE")
+GSE75196 <- subset(metadata, metadata$GSE_number == "GSE75196")
+GSE98224 <- subset(metadata, metadata$GSE_number == "GSE98224")
+GSE100197 <- subset(metadata, metadata$GSE_number == "GSE100197")
+GSE125605 <- subset(metadata, metadata$GSE_number == "GSE125605")
+
+png(filename = "./Bval_plot_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_adjFunnorm_filtbetas[, 1]), col = "#F7D56E", lwd = 3,
+     xlim = c(0, 1), ylim = c(0, 4), 
+     xlab = "Beta-Value (N = 49220 probes)", ylab = "Density", main = " ", cex.lab = 1.2)
+for (i in 2:ncol(placmet_adjFunnorm_filtbetas)) {
+  lines(density(placmet_adjFunnorm_filtbetas[, i]), col = "#F7D56E", lwd = 3)
+}
+dev.off()
+
+#beta-value density plot by pathology_group
+png(filename = "./Bval_plot_pathology_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_adjFunnorm_filtbetas[, 1]), col = ifelse(metadata$pathology_group[1] == "Control", "#F7D56E", "#8EC9FF"), 
+     lwd = 3, xlim = c(0, 1), ylim = c(0, 4),
+     xlab = "Beta-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2)
+control_color <- ifelse(metadata$pathology_group[i] == "Control", "#F7D56E", "#8EC9FF")
+for (i in 2:ncol(placmet_adjFunnorm_filtbetas)) {
+     lines(density(placmet_adjFunnorm_filtbetas[, i]), col = control_color, lwd = 3)
+}
+legend("topright", legend = c("Control Samples", "PE Samples"),
+       col = c("#F7D56E", "#8EC9FF"),
+       lwd = 3, bty = "n", cex = 1.2)
+dev.off()
+
+#beta-value density plot by Study
+
+gse_colours <- c("GSE75196" == "#F7D56E", "GSE125605" == "#8EC9FF", "GSE98224" ==  "#E67000", "GSE100197" == "#0060B5")
+
+png(filename = "./Bval_plot_study_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
+plot(density(placmet_adjFunnorm_filtbetas[, 1]), col = gse_colours[metadata$GSE_number[1]], 
+     lwd = 3, xlim = c(0, 1), ylim = c(0, 4),
+     xlab = "Beta-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2)
+for (i in 2:ncol(placmet_adjFunnorm_filtbetas)) {
+     lines(density(placmet_adjFunnorm_filtbetas[, i]), col = gse_colours[metadata$GSE_number[i]], lwd = 3)
+}
+legend("topright", legend = c("GSE75196", "GSE125605", "GSE98224", "GSE100197"),
+       col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5"),
        lwd = 3, bty = "n", cex = 1.2)
 dev.off()
