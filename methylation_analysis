@@ -15,16 +15,29 @@ probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::
 price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
 lipid_candidate <- read.csv("/workspace/lab/wilsonslab/eyerk/lipid_candidate_gene_files/all_lipid_genes.csv")
 lipid_gene_probes_old <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_candidate$Gene.Symbol,]
-write.csv(lipid_gene_probes_old, "lipid_gene_probes_old.csv") #71977 probes
+lipj_rows <- price_anno[price_anno$Closest_TSS_gene_name == "LIPJ",]
+lipid_gene_probes_old <- rbind(lipid_gene_probes_old, lipj_rows)
+write.csv(lipid_gene_probes_old, "lipid_gene_probes_old.csv") #71983 probes
 lipid_gene_probes <- merge(lipid_gene_probes_old, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
+lipid_gene_probes$chr <- ifelse(is.na(lipid_gene_probes$chr),sub(".*(chr[0-9XY]+)_.*", "\\1", lipid_gene_probes$HIL_CpG_Island_Name),lipid_gene_probes$chr)
+lipid_gene_probes$chr <- replace(lipid_gene_probes$chr, !grepl("^chr", lipid_gene_probes$chr), NA)
 write.csv(lipid_gene_probes, "lipid_gene_probes.csv")
 lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
 
+#Checking Number of Probes that will be excluded
+#SNP_probes
+lipid_gene_probes_SNP <- subset(lipid_gene_probes, lipid_gene_probes$n_target.CpG.SNP>0) #3271 probes
+lipid_gene_probes_Hyb <- subset(lipid_gene_probes, lipid_gene_probes$XY_Hits == "XY_YES" | lipid_gene_probes$Autosomal_Hits == "A_YES") #4858 probes
+nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") 
+lipid_gene_probes_nonvarplac <- subset(lipid_gene_probes, lipid_gene_probes$ID %in% nonvarplac_anno$CpG,) #15735 probes
+
 #Probe annotations 
 
-chrXprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrX") #1244 probes
-chrYprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrY") #1 probes
-NAprobes <- subset(lipid_gene_probes, is.na(lipid_gene_probes$chr)) #4881 probes
+chrXprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrX") #1339 probes
+chrYprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrY") #2 probes
+NAallprobes <- subset(lipid_gene_probes, is.na(lipid_gene_probes$chr)) #1820 probes
+unanno_autosomalprobes <- subset(NAallprobes, NAallprobes$XY_Hits == "XY_NO" & NAallprobes$Autosomal_Hits == "A_YES") #89 probes
+NAprobes <- subset(NAallprobes, !(NAallprobes$XY_Hits == "XY_NO" & NAallprobes$Autosomal_Hits == "A_YES")) #1731 probes
 
 #Creating groups for sex stratification
 metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
