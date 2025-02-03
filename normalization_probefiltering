@@ -67,6 +67,7 @@ probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::
 probeInfo$probeID <- rownames(probeInfo)
 chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX")
 chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY")
+#add predictedsex for GSE125605
 GSE125605_predictedsex <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/sex_prediction/GSE125605_sexprediction_load.csv")
 metadataold <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
 metadata <- merge(metadataold, GSE125605_predictedsex[, c("Sample_Name", "Fetal_Sex")], by = "Sample_Name", all.x = TRUE)
@@ -85,7 +86,8 @@ head(detp[rownames(detp) %in% chrYprobes$probeID, females$Sample_Name]) #Make su
          cg01707559                            0                            0
          cg02004872                            0                            0
                     GSM1944966_9376561070_R06C02
-         cg00212031                            0                                     cg00213748                            0
+         cg00212031                            0                                     
+         cg00213748                            0
          cg00214611                            0
          cg00455876                            0
          cg01707559                            0
@@ -97,6 +99,7 @@ number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #5
 avgbeta <- getBeta(combined_RGset)
 bad_beta <- is.na(avgbeta)
 number_bad_beta <- print(sum(rowSums(bad_beta)>=(ncol(combined_RGset))*0.05)) #17
+
 # remove probes with bad p-values or missing betas
 badProbes <- rowSums(bad_detp)>=(ncol(combined_RGset))*0.05 | rowSums(bad_beta)>=(ncol(combined_RGset))*0.05 
 badProbes1 <- as.data.frame(badProbes) 
@@ -125,10 +128,23 @@ placmet_adjFunnorm_allfiltered <- placmet_adjFunnorm_nonvarremoved
 saveRDS(placmet_adjFunnorm_allfiltered, "placmet_adjFunnorm_allfiltered.rds")
 
 
+#bad detection P >5% of samples
+detp <- minfi::detectionP(combined_RGset)
+bad_detp <- detp > 0.01
+number_bad_detp <- print(sum(rowSums(bad_detp) >= (ncol(combined_RGset))*0.05)) #592
 
+# missing betas >5% of samples 
+avgbeta <- getBeta(combined_RGset)
+bad_beta <- is.na(avgbeta)
+number_bad_beta <- print(sum(rowSums(bad_beta) >= (ncol(combined_RGset))*0.05)) #17
 
+# remove probes with bad p-values or missing betas
+badProbes <- rowSums(bad_detp) >= (ncol(combined_RGset))*0.05 | rowSums(bad_beta) >= (ncol(combined_RGset))*0.05 
+placmet_adjFunnorm_BPfilt <- placmet_adjFunnorm[!badProbes, ]
 
-
+# Remove Cross-Hybridizing probes
+price_anno_Hyb <- subset(price_anno, price_anno$XY_Hits == "XY_YES" | price_anno$Autosomal_Hits == "A_YES")
+placmet_adjFunnorm_HybRemoved <- placmet_adjFunnorm_BPfilt[!rownames(placmet_adjFunnorm_BPfilt) %in% price_anno_Hyb$ID, ]
 
 
 
