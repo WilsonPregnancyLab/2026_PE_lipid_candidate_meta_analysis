@@ -336,7 +336,7 @@ wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB, y = -log10
                      labels = c("Not_Biologically_Significant","Hypo-Methylated", "Hyper-methylated"),
                      guide = "none")
 placmet_M_fulldata_auto$siglabel <- ifelse(placmet_M_fulldata_auto$probes %in% maleauto_sig$probes, placmet_M_fulldata_auto$Closest_TSS_gene_name, NA)
-male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) + 
@@ -349,11 +349,11 @@ male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB, y = -log10(a
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
-  scale_color_manual(values = c("#FFA6C9", "black", "#AF69EE"), 
+  scale_color_manual(values = c("black","#FFA6C9", "#AF69EE"), 
                      labels = c("Not_Biologically_Significant", "Hyper-methylated", "Hypo-methylated"),
                      guide = "none")
 placmet_F_fulldata_auto$siglabel <- ifelse(placmet_F_fulldata_auto$probes %in% femaleauto_sig$probes, placmet_F_fulldata_auto$Closest_TSS_gene_name, NA)
-female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) + 
@@ -364,7 +364,7 @@ female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB, y = -log10
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
-  scale_color_manual(values = c("black", "#FFA6C9", "#AF69EE"), 
+  scale_color_manual(values = c("#AF69EE", "black", "#FFA6C9"), 
                      labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
                      guide = "none")
 png("./autosome_vol_adjFunnorm_panel.png", height = 9, width = 16, units = "in", res = 300)
