@@ -9,11 +9,8 @@ library(ggrepel) # version 0.9.5
 library(rtracklayer) # version 1.64.0
 library(GenomicRanges) #version 1.56.1
 library(ggpubr) #version 0.6.0
-library(Gviz) #version 1.48.0
 library(png) #version 0.1.8
 library("TxDb.Hsapiens.UCSC.hg19.knownGene") #version 3.2.2
-library(EnsDb.Hsapiens.v75) #version 2.99.0
-library(Homo.sapiens) #version 1.3.1
 
 placmet_wholepop_auto <- read.csv ("placmet_wholepop_auto.csv")
 placmet_M_fulldata_auto <- read.csv("placmet_M_fulldata_auto.csv")
@@ -23,7 +20,7 @@ placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
 #adj p-Values density plot
 png(filename = "./adjPval_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_wholepop_auto$adj.P.Val), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 5), 
+plot(density(placmet_wholepop_auto$adj.P.Val), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 6), 
      xlab = "Adjusted P-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
   lines(density(placmet_M_fulldata_auto$adj.P.Val), col = "#8EC9FF",lwd = 3) +
   lines(density(placmet_F_fulldata_auto$adj.P.Val), col = "#E67000", lwd = 3) +
@@ -98,18 +95,3 @@ legend("topright", legend = c("Control Samples", "PE Samples"),
        lwd = 3, bty = "n", cex = 1.2)
 dev.off()
 
-#beta-value density plot by Study
-
-gse_colours <- c("GSE75196" == "#F7D56E", "GSE125605" == "#8EC9FF", "GSE98224" ==  "#E67000", "GSE100197" == "#0060B5")
-
-png(filename = "./Bval_plot_study_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_adjFunnorm_filtbetas[, 1]), col = gse_colours[metadata$GSE_number[1]], 
-     lwd = 3, xlim = c(0, 1), ylim = c(0, 4),
-     xlab = "Beta-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2)
-for (i in 2:ncol(placmet_adjFunnorm_filtbetas)) {
-     lines(density(placmet_adjFunnorm_filtbetas[, i]), col = gse_colours[metadata$GSE_number[i]], lwd = 3)
-}
-legend("topright", legend = c("GSE75196", "GSE125605", "GSE98224", "GSE100197"),
-       col = c("#F7D56E", "#8EC9FF", "#E67000", "#0060B5"),
-       lwd = 3, bty = "n", cex = 1.2)
-dev.off()
