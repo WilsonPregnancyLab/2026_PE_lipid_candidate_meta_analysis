@@ -298,16 +298,16 @@ placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
 #Whole data 
 placmet_wholepop_auto$diffmethylation <- "Not_Biologically_Significant"
-placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB > 0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Hyper-methylated"
-placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB < -0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Hypo-methylated"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB > 0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Increased Methylation"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB < -0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Decreased Methylation"
 #Male data 
 placmet_M_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
-placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB > 0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Hyper-methylated"
-placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB < -0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Hypo-methylated"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB > 0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Increased Methylation"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB < -0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Decreased Methylation"
 placmet_M_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
 #Female Data 
 placmet_F_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
-placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB > 0.05 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Hyper-methylated"
+placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB > 0.05 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Increased Methylation"
 placmet_F_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
 
 #Comparison Table
@@ -329,9 +329,9 @@ colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "deltaB"]
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "deltaB"] <- "deltaB_M"
 
 #subset groups to remove columns that are not biologically significant
-sig_placmet_wholepop_auto <- subset(placmet_wholepop_auto[placmet_wholepop_auto$diffmethylation_whole %in% c("Hyper-methylated", "Hypo-methylated"), ])
-sig_placmet_F_fulldata_auto <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$diffmethylation_F %in% c("Hyper-methylated"), ])
-sig_placmet_M_fulldata_auto <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$diffmethylation_M %in% c("Hyper-methylated", "Hypo-methylated"), ])
+sig_placmet_wholepop_auto <- subset(placmet_wholepop_auto[placmet_wholepop_auto$diffmethylation_whole %in% c("Increased Methylation", "Decreased Methylation"), ])
+sig_placmet_F_fulldata_auto <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$diffmethylation_F %in% c("Increased Methylation"), ])
+sig_placmet_M_fulldata_auto <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$diffmethylation_M %in% c("Increased Methylation", "Decreased Methylation"), ])
 
 sig_placmet_wholepop_auto_condensed <- sig_placmet_wholepop_auto[, (names(sig_placmet_wholepop_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_whole", "adj.P.Val_whole", "deltaB_whole"))]
 sig_placmet_F_fulldata_auto_condensed <- sig_placmet_F_fulldata_auto[, (names(sig_placmet_F_fulldata_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_F", "adj.P.Val_F", "deltaB_F"))]
@@ -376,7 +376,7 @@ femaleauto_bio_sig <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$adj
 maleauto_bio_sig <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$adj.P.Val <0.05 & (placmet_M_fulldata_auto$deltaB < -0.05 | placmet_M_fulldata_auto$deltaB > 0.05), ]) #25
 
 #Volcano Plots
-black", "#d02670"- (pink-hypermethylated), "#8a3ffc"- (purple-hypomethylated)
+black", "#d02670"- (pink-Increased Methylation), "#8a3ffc"- (purple-Decreased Methylation)
 
 placmet_wholepop_auto$siglabel <- ifelse(placmet_wholepop_auto$probes %in% wholeauto_bio_sig$probes, placmet_wholepop_auto$Closest_TSS_gene_name, NA)
 wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = -log10(adj.P.Val_whole), col = diffmethylation_whole, label=siglabel)) + 
@@ -393,7 +393,7 @@ wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = 
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
   scale_color_manual(values = c("#d02670", "#8a3ffc", "black"), 
-                     labels = c("Not_Biologically_Significant","Hypo-Methylated", "Hyper-methylated"),
+                     labels = c("Not_Biologically_Significant","Decreased Methylation", "Increased Methylation"),
                      guide = "none")
 placmet_M_fulldata_auto$siglabel <- ifelse(placmet_M_fulldata_auto$probes %in% maleauto_bio_sig$probes, placmet_M_fulldata_auto$Closest_TSS_gene_name, NA)
 male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB_M, y = -log10(adj.P.Val_M), col = diffmethylation_M, label=siglabel)) + 
@@ -410,7 +410,7 @@ male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB_M, y = -log10
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
   scale_color_manual(values = c("#d02670", "#8a3ffc", "black"), 
-                     labels = c("Not_Biologically_Significant", "Hypo-methylated", "Hyper-methylated"),
+                     labels = c("Not_Biologically_Significant", "Decreased Methylation", "Increased Methylation"),
                      guide = "none")
 placmet_F_fulldata_auto$siglabel <- ifelse(placmet_F_fulldata_auto$probes %in% femaleauto_bio_sig$probes, placmet_F_fulldata_auto$Closest_TSS_gene_name, NA)
 female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log10(adj.P.Val_F), col = diffmethylation_F, label=siglabel)) + 
@@ -427,7 +427,7 @@ female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
   scale_color_manual(values = c("#d02670", "black"), 
-                     labels = c("Not Biologically Significant", "Hyper-methylated"),
+                     labels = c("Not Biologically Significant", "Increased Methylation"),
                      guide = "none")
 png("./autosome_vol_adjFunnorm_panel_labeled.png", height = 9, width = 16, units = "in", res = 300)
 grid.arrange(wholepop_auto, female_auto, male_auto, nrow = 1)
@@ -452,7 +452,7 @@ male_X <- ggplot(data = placmet_M_fulldata_X, aes(x = deltaB, y = -log10(adj.P.V
                      limits = c(-0.30,0.30), 
                      labels = label_number(accuracy = 0.1))  +
   scale_color_manual(values = c("black", "#d02670"), 
-                     labels = c("Not Biologically Significant", "Hyper-methylated"),
+                     labels = c("Not Biologically Significant", "Increased Methylation"),
                      guide = "none")
 
 female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
@@ -469,7 +469,7 @@ female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P
                      limits = c(-0.30,0.30), 
                      labels = label_number(accuracy = 0.1)) +
   scale_color_manual(values = c("black", "#d02670"), 
-                     labels = c("Not Biologically Significant", "Hyper-methylated"),
+                     labels = c("Not Biologically Significant", "Increased Methylation"),
                      guide = "none")
 png("./X_vol_adjFunnorm_panel.png", height = 9, width = 10, units = "in", res = 300)
 grid.arrange(female_X, male_X, nrow = 1)
