@@ -348,6 +348,7 @@ grouped_annotations <- lipid_genes_annotations[, c("combined_Closest_TSS_gene_na
 all_sig_placmet_annotated <- merge(all_sig_placmet, grouped_annotations, by = "combined_Closest_TSS_gene_name", all.x = TRUE)
 all_sig_placmet_annotated$lipid_annotations <- coalesce(all_sig_placmet_annotated$GO.Biological.Process, all_sig_placmet_annotated$GO.Cellular.Component, all_sig_placmet_annotated$Pathway, all_sig_placmet_annotated$Disease, all_sig_placmet_annotated$DiseaseClass)
 sig_placmet_annotated <- all_sig_placmet_annotated[, !(names(all_sig_placmet) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
+write.csv(sig_placmet_annotated, "sig_placmet_annotated.csv")
 
 #Individual Tables - whole pop
 colnames(lipid_genes_annotations)[colnames(lipid_genes_annotations) == "combined_Closest_TSS_gene_name"] <- "Closest_TSS_gene_name"
@@ -355,14 +356,17 @@ grouped_annotations <- lipid_genes_annotations[, c("Closest_TSS_gene_name", "GO.
 wholepop_placmet_annotated <- merge(sig_placmet_wholepop_auto_condensed, grouped_annotations, by = "Closest_TSS_gene_name", all.x = TRUE)
 wholepop_placmet_annotated$lipid_annotations <- coalesce(wholepop_placmet_annotated$GO.Biological.Process, wholepop_placmet_annotated$GO.Cellular.Component, wholepop_placmet_annotated$Pathway, wholepop_placmet_annotated$Disease, wholepop_placmet_annotated$DiseaseClass)
 wholepop_placmet_annotated <- wholepop_placmet_annotated[, !(names(wholepop_placmet_annotated) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
+write.csv(wholepop_placmet_annotated, "wholepop_placmet_annotated.csv")
 
 F_placmet_annotated <- merge(sig_placmet_F_fulldata_auto_condensed, grouped_annotations, by = "Closest_TSS_gene_name", all.x = TRUE)
 F_placmet_annotated$lipid_annotations <- coalesce(F_placmet_annotated$GO.Biological.Process, F_placmet_annotated$GO.Cellular.Component, F_placmet_annotated$Pathway, F_placmet_annotated$Disease, F_placmet_annotated$DiseaseClass)
 F_placmet_annotated <- F_placmet_annotated[, !(names(F_placmet_annotated) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
+write.csv(F_placmet_annotated, "F_placmet_annotated.csv")
 
 M_placmet_annotated <- merge(sig_placmet_M_fulldata_auto_condensed, grouped_annotations, by = "Closest_TSS_gene_name", all.x = TRUE)
 M_placmet_annotated$lipid_annotations <- coalesce(M_placmet_annotated$GO.Biological.Process, M_placmet_annotated$GO.Cellular.Component, M_placmet_annotated$Pathway, M_placmet_annotated$Disease, M_placmet_annotated$DiseaseClass)
 M_placmet_annotated <- M_placmet_annotated[, !(names(wholepop_placmet_annotated) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
+write.csv(M_placmet_annotated, "M_placmet_annotated.csv")
 
 wholeauto_sig <- subset(placmet_wholepop_auto[placmet_wholepop_auto$adj.P.Val <0.05,])
 femaleauto_sig <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$adj.P.Val <0.05,]) #77
