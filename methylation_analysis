@@ -379,6 +379,8 @@ wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = 
   geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.3, size = 3) + 
+  geom_text_repel(max.overlaps = Inf,
+                  segment.size = 0.5) +
   theme_bw() +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
@@ -411,6 +413,8 @@ female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log
   geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) + 
+  geom_text_repel(max.overlaps = Inf,
+                  segment.size = 0.5) +
   theme_bw() +
   ylab(" ") +
   theme(axis.text = element_text(size = 12.5),
@@ -421,7 +425,7 @@ female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log
   scale_color_manual(values = c("#d02670", "black"), 
                      labels = c("Not Biologically Significant", "Hyper-methylated"),
                      guide = "none")
-png("./autosome_vol_adjFunnorm_panel.png", height = 9, width = 16, units = "in", res = 300)
+png("./autosome_vol_adjFunnorm_panel_labeled.png", height = 9, width = 16, units = "in", res = 300)
 grid.arrange(wholepop_auto, female_auto, male_auto, nrow = 1)
 #Warning messages:
   1: Removed 1 row containing missing values or values outside the scale range(`geom_point()`).
@@ -430,25 +434,7 @@ grid.arrange(wholepop_auto, female_auto, male_auto, nrow = 1)
 dev.off()
 
 #plots of X chromosome 
-male_X <- ggplot(data = placmet_M_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation, label=siglabel)) + 
-  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
-  geom_point(shape = 19, alpha = 0.4, size = 3) +
-  geom_text_repel(max.overlaps = Inf) +
-  theme_bw() +
-  ylab("-log10(adjusted P.Value)") +
-  theme(axis.text = element_text(size = 12.5),
-        axis.title = element_text(size = 14)) +
-  xlab("Delta Beta") +
-  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
-                     limits = c(-0.30,0.30), 
-                     labels = label_number(accuracy = 0.1))  +
-  scale_color_manual(values = c("#FFA6C9", "#AF69EE", "black"), 
-                     labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
-                     guide = "none")
-
-female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+male_X <- ggplot(data = placmet_M_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) +
@@ -460,9 +446,26 @@ female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
                      limits = c(-0.30,0.30), 
+                     labels = label_number(accuracy = 0.1))  +
+  scale_color_manual(values = c("black", "#d02670"), 
+                     labels = c("Not Biologically Significant", "Hyper-methylated"),
+                     guide = "none")
+
+female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P.Val), col = diffmethylation)) + 
+  geom_vline(xintercept = c(-0.05,0.05), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "gray", linetype = "dashed", linewidth = 0.75) +
+  geom_point(shape = 19, alpha = 0.4, size = 3) +
+  theme_bw() +
+  ylab("-log10(adjusted P.Value)") +
+  theme(axis.text = element_text(size = 12.5),
+        axis.title = element_text(size = 14)) +
+  xlab("Delta Beta") +
+  scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
+  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
+                     limits = c(-0.30,0.30), 
                      labels = label_number(accuracy = 0.1)) +
-  scale_color_manual(values = c("#FFA6C9", "#AF69EE", "black"), 
-                     labels = c("Not Biologically Significant", "Hyper-methylated", "Hypo-methylated"),
+  scale_color_manual(values = c("black", "#d02670"), 
+                     labels = c("Not Biologically Significant", "Hyper-methylated"),
                      guide = "none")
 png("./X_vol_adjFunnorm_panel.png", height = 9, width = 10, units = "in", res = 300)
 grid.arrange(female_X, male_X, nrow = 1)
