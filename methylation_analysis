@@ -392,7 +392,7 @@ wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = 
   xlab("Delta Beta") + 
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
-  scale_color_manual(values = c("#d02670", "#8a3ffc", "black"), 
+  scale_color_manual(values = c("#8a3ffc", "#d02670", "black"), 
                      labels = c("Not_Biologically_Significant","Decreased Methylation", "Increased Methylation"),
                      guide = "none")
 placmet_M_fulldata_auto$siglabel <- ifelse(placmet_M_fulldata_auto$probes %in% maleauto_bio_sig$probes, placmet_M_fulldata_auto$Closest_TSS_gene_name, NA)
@@ -409,7 +409,7 @@ male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB_M, y = -log10
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
   scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
-  scale_color_manual(values = c("#d02670", "#8a3ffc", "black"), 
+  scale_color_manual(values = c("#8a3ffc", "#d02670", "black"), 
                      labels = c("Not_Biologically_Significant", "Decreased Methylation", "Increased Methylation"),
                      guide = "none")
 placmet_F_fulldata_auto$siglabel <- ifelse(placmet_F_fulldata_auto$probes %in% femaleauto_bio_sig$probes, placmet_F_fulldata_auto$Closest_TSS_gene_name, NA)
