@@ -347,7 +347,7 @@ colnames(lipid_genes_annotations)[colnames(lipid_genes_annotations) == "Gene.Sym
 grouped_annotations <- lipid_genes_annotations[, c("combined_Closest_TSS_gene_name", "GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass")]
 all_sig_placmet_annotated <- merge(all_sig_placmet, grouped_annotations, by = "combined_Closest_TSS_gene_name", all.x = TRUE)
 all_sig_placmet_annotated$lipid_annotations <- coalesce(all_sig_placmet_annotated$GO.Biological.Process, all_sig_placmet_annotated$GO.Cellular.Component, all_sig_placmet_annotated$Pathway, all_sig_placmet_annotated$Disease, all_sig_placmet_annotated$DiseaseClass)
-sig_placmet_annotated <- all_sig_placmet_annotated[, !(names(all_sig_placmet) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
+sig_placmet_annotated <- all_sig_placmet_annotated[, !(names(all_sig_placmet_annotated) %in% c("GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass"))]
 write.csv(sig_placmet_annotated, "sig_placmet_annotated.csv")
 
 #Individual Tables - whole pop
