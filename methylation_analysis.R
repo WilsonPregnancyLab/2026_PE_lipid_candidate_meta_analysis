@@ -287,33 +287,45 @@ placmet_F_fulldata_X <- merge(merge(tt_CONTvsPE_F_X, placmet_FemaleAvgbetas_X[, 
 write.csv(tt_CONTvsPE_F_X, "./tt_CONTvsPE_F_X_study.csv")
 write.csv(placmet_F_fulldata_X, "./placmet_F_fulldata_X.csv")
 
+#Plotting 
+#Adding diff methylation information for colouring
+#Read CSV files if plotting in a different session
+
 placmet_wholepop_auto <- read.csv ("placmet_wholepop_auto.csv")
 placmet_M_fulldata_auto <- read.csv("placmet_M_fulldata_auto.csv")
 placmet_M_fulldata_X <- read.csv("placmet_M_fulldata_X.csv")
 placmet_F_fulldata_auto <- read.csv("placmet_F_fulldata_auto.csv")
 placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
-#Plotting 
-#Adding diff methylation information for colouring
-
 #Whole data 
 placmet_wholepop_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB > 0.00 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
+placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB < 0.00 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB > 0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Increased Methylation"
 placmet_wholepop_auto$diffmethylation[placmet_wholepop_auto$deltaB < -0.05 & placmet_wholepop_auto$adj.P.Val <0.05] <- "Decreased Methylation"
 #Male data 
 placmet_M_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB > 0.00 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
+placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB < 0.00 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB > 0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Increased Methylation"
 placmet_M_fulldata_auto$diffmethylation[placmet_M_fulldata_auto$deltaB < -0.05 & placmet_M_fulldata_auto$adj.P.Val <0.05] <- "Decreased Methylation"
 placmet_M_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
+placmet_M_fulldata_X$diffmethylation[placmet_M_fulldata_X$deltaB > 0.00 & placmet_M_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
+placmet_M_fulldata_X$diffmethylation[placmet_M_fulldata_X$deltaB < 0.00 & placmet_M_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 #Female Data 
 placmet_F_fulldata_auto$diffmethylation <- "Not_Biologically_Significant"
+placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB > 0.00 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
+placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB < 0.00 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 placmet_F_fulldata_auto$diffmethylation[placmet_F_fulldata_auto$deltaB > 0.05 & placmet_F_fulldata_auto$adj.P.Val <0.05] <- "Increased Methylation"
 placmet_F_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
+placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB > 0.00 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
+placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB < 0.00 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 
 #Comparison Table
 library(dplyr)
 
 #rename diffmethylation columns for better identification by group
+#I only ran the code for autosomes since there were no significant genes in the X chromosomes in fetal M and F populations
 colnames(placmet_wholepop_auto)[colnames(placmet_wholepop_auto) == "diffmethylation"] <- "diffmethylation_whole"
 colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "diffmethylation"] <- "diffmethylation_F"
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "diffmethylation"] <- "diffmethylation_M"
@@ -329,9 +341,9 @@ colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "deltaB"]
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "deltaB"] <- "deltaB_M"
 
 #subset groups to remove columns that are not biologically significant
-sig_placmet_wholepop_auto <- subset(placmet_wholepop_auto[placmet_wholepop_auto$diffmethylation_whole %in% c("Increased Methylation", "Decreased Methylation"), ])
-sig_placmet_F_fulldata_auto <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$diffmethylation_F %in% c("Increased Methylation"), ])
-sig_placmet_M_fulldata_auto <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$diffmethylation_M %in% c("Increased Methylation", "Decreased Methylation"), ])
+sig_placmet_wholepop_auto <- subset(placmet_wholepop_auto[placmet_wholepop_auto$diffmethylation_whole %in% c("Increased Methylation", "Decreased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
+sig_placmet_F_fulldata_auto <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$diffmethylation_F %in% c("Increased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
+sig_placmet_M_fulldata_auto <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$diffmethylation_M %in% c("Increased Methylation", "Decreased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
 
 sig_placmet_wholepop_auto_condensed <- sig_placmet_wholepop_auto[, (names(sig_placmet_wholepop_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_whole", "adj.P.Val_whole", "deltaB_whole"))]
 sig_placmet_F_fulldata_auto_condensed <- sig_placmet_F_fulldata_auto[, (names(sig_placmet_F_fulldata_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_F", "adj.P.Val_F", "deltaB_F"))]
