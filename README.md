@@ -31,15 +31,13 @@ Geographic location of data collection: Hamilton, Ontario, Canada
 
 # Sharing/Access Information
 
-Was data derived from another source?
-
-### Lipid Candidate Gene Search: 
+### Data Sets Used for Lipid Candidate Gene Search: 
 - GAD Gene-Disease Associations Dataset - https://maayanlab.cloud/Harmonizome/dataset/GAD+Gene-Disease+Associations
 - GO Biological Process Annotations 2023 Dataset - https://maayanlab.cloud/Harmonizome/dataset/GO+Biological+Process+Annotations+2023
 -  GO Cellular Component Annotations 2023 Dataset - https://maayanlab.cloud/Harmonizome/dataset/GO+Cellular+Component+Annotations+2023
 - Reactome Pathways 2024 Dataset - https://maayanlab.cloud/Harmonizome/dataset/Reactome+Pathways+2024
   
-### Gene Expression Omnibus: 
+### Data Sets Downloaded from Gene Expression Omnibus: 
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE125605
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE100197
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE98224
