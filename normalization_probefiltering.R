@@ -127,26 +127,3 @@ placmet_adjFunnorm_allfiltered <- placmet_adjFunnorm_nonvarremoved
 
 saveRDS(placmet_adjFunnorm_allfiltered, "placmet_adjFunnorm_allfiltered.rds")
 
-
-#bad detection P >5% of samples
-detp <- minfi::detectionP(combined_RGset)
-bad_detp <- detp > 0.01
-number_bad_detp <- print(sum(rowSums(bad_detp) >= (ncol(combined_RGset))*0.05)) #592
-
-# missing betas >5% of samples 
-avgbeta <- getBeta(combined_RGset)
-bad_beta <- is.na(avgbeta)
-number_bad_beta <- print(sum(rowSums(bad_beta) >= (ncol(combined_RGset))*0.05)) #17
-
-# remove probes with bad p-values or missing betas
-badProbes <- rowSums(bad_detp) >= (ncol(combined_RGset))*0.05 | rowSums(bad_beta) >= (ncol(combined_RGset))*0.05 
-placmet_adjFunnorm_BPfilt <- placmet_adjFunnorm[!badProbes, ]
-
-# Remove Cross-Hybridizing probes
-price_anno_Hyb <- subset(price_anno, price_anno$XY_Hits == "XY_YES" | price_anno$Autosomal_Hits == "A_YES")
-placmet_adjFunnorm_HybRemoved <- placmet_adjFunnorm_BPfilt[!rownames(placmet_adjFunnorm_BPfilt) %in% price_anno_Hyb$ID, ]
-
-
-
-
-
