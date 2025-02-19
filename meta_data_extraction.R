@@ -82,6 +82,7 @@ write.csv(metadata125605, "./metadata125605.csv")
 # Gestational_Age	(if available)
 # Tissue (if available)
 # *Other meta data columns you have available
+# file saved as "Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv"
 
 # to check your work, the total number of rows should equal the total number of samples
 
