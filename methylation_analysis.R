@@ -8,23 +8,28 @@ library(ggrepel) #version 0.9.5
 library(minfi)
 library(wateRmelon)
 
+# Load in probe annotation files and lipid candidate gene file 
 library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, 
                                  IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Other, 
                                  IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Manifest))
 price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
 lipid_candidate <- read.csv("/workspace/lab/wilsonslab/eyerk/lipid_candidate_gene_files/all_lipid_genes.csv")
-lipid_gene_probes_noanno <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_candidate$Gene.Symbol,]
+
+# Subset price_anno annotation file so that it only includes my lipid genes + Add LIPJ (gene to be investigated)
+lipid_gene_probes_noanno <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_candidate$Gene.Symbol, ]
 lipj_rows <- price_anno[price_anno$Closest_TSS_gene_name == "LIPJ",]
 lipid_gene_probes_noanno <- rbind(lipid_gene_probes_noanno, lipj_rows)
 write.csv(lipid_gene_probes_noanno, "lipid_gene_probes_noanno.csv") #71983 probes
+# merge the chromosome column from probeInfo into lipid_gene_probes to annotate which chromosome the lipid gene is on
 lipid_gene_probes <- merge(lipid_gene_probes_noanno, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
+# supplement all the chromosomes that couldn't be identified with the values in the HIL_CpG_Island_Name column
 lipid_gene_probes$chr <- ifelse(is.na(lipid_gene_probes$chr),sub(".*(chr[0-9XY]+)_.*", "\\1", lipid_gene_probes$HIL_CpG_Island_Name),lipid_gene_probes$chr)
 lipid_gene_probes$chr <- replace(lipid_gene_probes$chr, !grepl("^chr", lipid_gene_probes$chr), NA)
 write.csv(lipid_gene_probes, "lipid_gene_probes.csv")
 lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
 
-#Checking Number of Probes that will be excluded
+# Checking Number of Probes that will be excluded
 #SNP_probes
 lipid_gene_probes_SNP <- subset(lipid_gene_probes, lipid_gene_probes$n_target.CpG.SNP>0) #3271 probes
 lipid_gene_probes_Hyb <- subset(lipid_gene_probes, lipid_gene_probes$XY_Hits == "XY_YES" | lipid_gene_probes$Autosomal_Hits == "A_YES") #4858 probes
@@ -63,6 +68,7 @@ females$Sentrix_ID <- droplevels(females$Sentrix_ID)
 females$Sentrix_Position <- as.factor(females$Sentrix_Position)
 females$GSE_number <- as.factor(females$GSE_number)
 
+# Read the filtered and normalized RG sets
 placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
 placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
 placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,] #dim 49225 180
@@ -130,19 +136,9 @@ placmet_MaleAvgbetas_X$deltaB <- placmet_MaleAvgbetas_X$AvgBetaCONT - placmet_Ma
 rownames(placmet_MaleAvgbetas_X) <- placmet_MaleAvgbetas_X$ProbeCont
 write.csv(placmet_MaleAvgbetas_X, "./placmet_MaleAvgbetas_X.csv")
 
-#Male Y Chromosome (only 1 probe - didn't run)
+#Male Y Chromosome (had 0 probes - didn't run, would copy previous code if had Male Y Chromosomes)
 placmet_PE_M_Y <-  as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrYprobes$ID, PEmetadata_M$Sample_Name]) #dim: 0, 52 
 placmet_CONT_M_Y <- as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrYprobes$ID, Controlmetadata_M$Sample_Name]) #dim: 0, 41
-# calculate Male Y average betas
-placmet_CONT_M_Y$AvgBetaCONT <- rowMeans(placmet_CONT_M_Y)
-placmet_CONT_M_Y$ProbeCONT <- rownames(placmet_CONT_M_Y)
-placmet_PE_M_Y$AvgBetaPE <- rowMeans(placmet_PE_M_Y)
-placmet_PE_M_Y$ProbePE <- rownames(placmet_PE_M_Y)
-# Merge Male Y Table 
-placmet_MaleAvgbetas_Y <- merge(placmet_CONT_M_Y[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_M_Y[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_MaleAvgbetas_Y$deltaB <- placmet_MaleAvgbetas_Y$AvgBetaCONT - placmet_MaleAvgbetas_Y$AvgBetaPE 
-rownames(placmet_MaleAvgbetas_Y) <- placmet_MaleAvgbetas_Y$ProbeCont
-write.csv(placmet_MaleAvgbetas_Y, "./placmet_MaleAvgbetas_Y.csv")
 
 # Female population Betas table 
 
@@ -191,9 +187,6 @@ write.csv(Mval_male_auto, "./Mval_male_auto.csv")
 #male XChr
 Mval_male_X <- Mval_male[rownames(Mval_male) %in% chrXprobes$ID,]
 write.csv(Mval_male_X, "./Mval_male_X.csv")
-
-#male Ychr
-Mval_male_Y <- Mval_male[rownames(Mval_male) %in% chrYprobes$ID,]
 
 #Female Population MVals 
 Mval_female <- beta2m(placmet_adjFunnorm_filtfun_F)
@@ -321,39 +314,42 @@ placmet_F_fulldata_X$diffmethylation <- "Not_Biologically_Significant"
 placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB > 0.00 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Increased Methylation"
 placmet_F_fulldata_X$diffmethylation[placmet_F_fulldata_X$deltaB < 0.00 & placmet_F_fulldata_X$adj.P.Val <0.05] <- "Trending Towards Decreased Methylation"
 
-#Comparison Table
+# Comparison Table
 library(dplyr)
 
-#rename diffmethylation columns for better identification by group
-#I only ran the code for autosomes since there were no significant genes in the X chromosomes in fetal M and F populations
+# rename diffmethylation columns for better identification by group
+# only ran the code for autosomes since there were no significant genes in the X chromosomes in fetal M and F populations
 colnames(placmet_wholepop_auto)[colnames(placmet_wholepop_auto) == "diffmethylation"] <- "diffmethylation_whole"
 colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "diffmethylation"] <- "diffmethylation_F"
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "diffmethylation"] <- "diffmethylation_M"
 
-#rename adj.P.Val columns for better identification by group
+# rename adj.P.Val columns for better identification by group
 colnames(placmet_wholepop_auto)[colnames(placmet_wholepop_auto) == "adj.P.Val"] <- "adj.P.Val_whole"
 colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "adj.P.Val"] <- "adj.P.Val_F"
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "adj.P.Val"] <- "adj.P.Val_M"
 
-#rename deltaB columns for better identification by group
+# rename deltaB columns for better identification by group
 colnames(placmet_wholepop_auto)[colnames(placmet_wholepop_auto) == "deltaB"] <- "deltaB_whole"
 colnames(placmet_F_fulldata_auto)[colnames(placmet_F_fulldata_auto) == "deltaB"] <- "deltaB_F"
 colnames(placmet_M_fulldata_auto)[colnames(placmet_M_fulldata_auto) == "deltaB"] <- "deltaB_M"
 
-#subset groups to remove columns that are not biologically significant
+# subset groups to remove columns that are not biologically significant
 sig_placmet_wholepop_auto <- subset(placmet_wholepop_auto[placmet_wholepop_auto$diffmethylation_whole %in% c("Increased Methylation", "Decreased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
 sig_placmet_F_fulldata_auto <- subset(placmet_F_fulldata_auto[placmet_F_fulldata_auto$diffmethylation_F %in% c("Increased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
 sig_placmet_M_fulldata_auto <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$diffmethylation_M %in% c("Increased Methylation", "Decreased Methylation", "Trending Towards Increased Methylation", "Trending Towards Decreased Methylation"), ])
 
+# removed columns that were not being used for data analysis
 sig_placmet_wholepop_auto_condensed <- sig_placmet_wholepop_auto[, (names(sig_placmet_wholepop_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_whole", "adj.P.Val_whole", "deltaB_whole"))]
 sig_placmet_F_fulldata_auto_condensed <- sig_placmet_F_fulldata_auto[, (names(sig_placmet_F_fulldata_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_F", "adj.P.Val_F", "deltaB_F"))]
 sig_placmet_M_fulldata_auto_condensed <- sig_placmet_M_fulldata_auto[, (names(sig_placmet_M_fulldata_auto) %in% c("probes", "Closest_TSS_gene_name", "diffmethylation_M", "adj.P.Val_M", "deltaB_M"))]
 
+# One large table with all biologically significant genes in Female, Male and Whole Population Autosomes
 F_M_sig_placmet <- merge(sig_placmet_F_fulldata_auto_condensed, sig_placmet_M_fulldata_auto_condensed, by = "probes", all = TRUE)
 all_sig_placmet <- merge(sig_placmet_wholepop_auto_condensed, F_M_sig_placmet, by = "probes", all = TRUE)
 all_sig_placmet$combined_Closest_TSS_gene_name <- coalesce(all_sig_placmet$Closest_TSS_gene_name, all_sig_placmet$Closest_TSS_gene_name.x, all_sig_placmet$Closest_TSS_gene_name.y)
 all_sig_placmet <- all_sig_placmet[, !(names(all_sig_placmet) %in% c("Closest_TSS_gene_name", "Closest_TSS_gene_name.x", "Closest_TSS_gene_name.y"))]
 
+# add annotations for function of lipid genes
 lipid_genes_annotations <- read.csv("/workspace/lab/wilsonslab/eyerk/lipid_candidate_gene_files/all_lipid_genes.csv")
 colnames(lipid_genes_annotations)[colnames(lipid_genes_annotations) == "Gene.Symbol"] <- "combined_Closest_TSS_gene_name"
 grouped_annotations <- lipid_genes_annotations[, c("combined_Closest_TSS_gene_name", "GO.Biological.Process", "GO.Cellular.Component", "Pathway", "Disease", "DiseaseClass")]
