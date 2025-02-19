@@ -59,20 +59,15 @@ detp <- minfi::detectionP(combined_RGset)
 number_bad_P_before_Fstrat <- print(sum(rowSums(detp)>=(ncol(combined_RGset))*0.05)) #421
 write.csv(detp, "detp_table.csv")
 
-## Annotations for X and Y probes
+## Annotate X and Y probes
 BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19", update = F)
 library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
-
 probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Other, IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Manifest)) 
 probeInfo$probeID <- rownames(probeInfo)
 chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX")
 chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY")
-#add predictedsex for GSE125605
-GSE125605_predictedsex <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/sex_prediction/GSE125605_sexprediction_load.csv")
-metadataold <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
-metadata <- merge(metadataold, GSE125605_predictedsex[, c("Sample_Name", "Fetal_Sex")], by = "Sample_Name", all.x = TRUE)
-write.csv(metadata,"Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
 metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+
 males <- subset(metadata, metadata$Fetal_Sex == "M")
 females <- subset(metadata, metadata$Fetal_Sex == "F")
 ## For females, set detp in Y chromosomes to 0 (these probes do not bind to anything in female samples)
@@ -92,15 +87,17 @@ head(detp[rownames(detp) %in% chrYprobes$probeID, females$Sample_Name]) #Make su
          cg00455876                            0
          cg01707559                            0
          cg02004872                            0
+
+# bad probes have detection p-value > 0.01
 bad_detp <- detp > 0.01
-#running bad probes
+#number of bad probes in >= 5% of samples
 number_bad_detp <- print(sum(rowSums(bad_detp)>=(ncol(combined_RGset))*0.05)) #592
-# missing betas >5% of samples 
+# missing betas >= 5% of samples 
 avgbeta <- getBeta(combined_RGset)
 bad_beta <- is.na(avgbeta)
 number_bad_beta <- print(sum(rowSums(bad_beta)>=(ncol(combined_RGset))*0.05)) #17
 
-# remove probes with bad p-values or missing betas
+# remove probes with bad p-values or missing betas >= 5% samples
 badProbes <- rowSums(bad_detp)>=(ncol(combined_RGset))*0.05 | rowSums(bad_beta)>=(ncol(combined_RGset))*0.05 
 badProbes1 <- as.data.frame(badProbes) 
 #rowSums function below didn't work on badProbes because it's a vector so turned it into a dataframe
