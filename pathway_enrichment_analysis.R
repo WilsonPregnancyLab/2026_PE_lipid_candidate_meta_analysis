@@ -93,7 +93,7 @@ ord_sig_pathways_wholepop_auto$Name <- factor(ord_sig_pathways_wholepop_auto$Nam
 ord_sig_pathways_wholepop_auto$Label <- paste0(ord_sig_pathways_wholepop_auto$Name, '(', ord_sig_pathways_wholepop_auto$ID, ')')
 ord_sig_pathways_wholepop_auto$Label <- factor(ord_sig_pathways_wholepop_auto$Label, levels = rev(ord_sig_pathways_wholepop_auto$Label[order(ord_sig_pathways_wholepop_auto$CorrectedPvalue)]))
 
-pathway_wholepop_auto_plot <- ggplot(ord_sig_pathways_wholepop_auto[1:25,], aes(x = Label, y = -log(CorrectedPvalue), fill = Multifunctionality)) +
+pathway_wholepop_auto_plot <- ggplot(ord_sig_pathways_wholepop_auto[1:2,], aes(x = Label, y = -log(CorrectedPvalue), fill = Multifunctionality)) +
     geom_bar(stat = 'identity') +
     # geom_hline(yintercept = -log(0.05), col = '#a30000', linetype = 'dashed') +
     xlab('') +
@@ -115,9 +115,9 @@ pathway_wholepop_auto_plot <- ggplot(ord_sig_pathways_wholepop_auto[1:25,], aes(
     axis.text.y = element_text(color = 'black'),
     legend.spacing.y = unit(0.3, 'cm'),
     legend.title = element_text(margin = margin(r = 40, b = 10))) +
-    guides(fill = guide_colorbar(barwidth = 15, barheight = 0.7))
+    guides(fill = guide_colorbar(barwidth = 5, barheight = 0.7))
 
-png(filename = './plots/2025_Whole_Pop_Auto_Lipid_DMR_Pathways.png', width = 10, height = 8, units = 'in', res = 300)
+png(filename = './2025_Whole_Pop_Auto_Lipid_DMR_Pathways.png', width = 15, height = 10, units = 'in', res = 300)
 pathway_wholepop_auto_plot
 dev.off()
 
