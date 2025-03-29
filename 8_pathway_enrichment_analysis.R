@@ -110,7 +110,7 @@ pathway_wholepop_auto_plot <- ggplot(ord_sig_pathways_wholepop_auto[1:2,], aes(x
     theme_light() +
     theme(legend.position = 'bottom',
     legend.justification = c(3.5,0),
-    text = element_text(size = 15),
+    text = element_text(size = 30),
     axis.text.x = element_text(color = 'black'),
     axis.text.y = element_text(color = 'black'),
     legend.spacing.y = unit(0.3, 'cm'),
