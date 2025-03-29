@@ -110,14 +110,14 @@ pathway_wholepop_auto_plot <- ggplot(ord_sig_pathways_wholepop_auto[1:2,], aes(x
     theme_light() +
     theme(legend.position = 'bottom',
     legend.justification = c(3.5,0),
-    text = element_text(size = 30),
+    text = element_text(size = 25),
     axis.text.x = element_text(color = 'black'),
     axis.text.y = element_text(color = 'black'),
     legend.spacing.y = unit(0.3, 'cm'),
     legend.title = element_text(margin = margin(r = 40, b = 10))) +
     guides(fill = guide_colorbar(barwidth = 5, barheight = 0.7))
 
-png(filename = './2025_Whole_Pop_Auto_Lipid_DMR_Pathways.png', width = 15, height = 10, units = 'in', res = 300)
+png(filename = './2025_Whole_Pop_Auto_Lipid_DMR_Pathways_txt25.png', width = 15, height = 10, units = 'in', res = 300)
 pathway_wholepop_auto_plot
 dev.off()
 
