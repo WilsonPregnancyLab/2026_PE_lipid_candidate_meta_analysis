@@ -388,59 +388,50 @@ maleauto_bio_sig <- subset(placmet_M_fulldata_auto[placmet_M_fulldata_auto$adj.P
 "grey" (#no change in methylation), "#d02670"- (pink-Increased Methylation), "#8a00c4"- (purple-Decreased Methylation)
 
 placmet_wholepop_auto$siglabel <- ifelse(placmet_wholepop_auto$probes %in% wholeauto_bio_sig$probes, placmet_wholepop_auto$Closest_TSS_gene_name, NA)
-wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = -log10(adj.P.Val_whole), col = diffmethylation_whole, label=siglabel)) + 
+wholepop_auto <- ggplot(data = placmet_wholepop_auto, aes(x = deltaB_whole, y = -log10(adj.P.Val_whole), col = diffmethylation_whole)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.3, size = 3) + 
-  geom_text_repel(max.overlaps = Inf,
-                  segment.size = 0.5) +
   theme_bw() +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
-  ylab("-log10(adjusted P.Value)") +
+  ylab("-log10(FDR)") +
   xlab("Delta Beta") + 
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
-  scale_color_manual(values = c("#d02670", "#8a00c4", "grey"), 
-                     labels = c("Not_Biologically_Significant","Decreased Methylation", "Increased Methylation"),
+  scale_x_continuous(breaks = seq(-0.15, 0.25, by = 0.1), limits = c(-0.15, 0.25)) +
+  scale_color_manual(values = c("#d02670", "#8a00c4", "grey"),
                      guide = "none")
   
 placmet_M_fulldata_auto$siglabel <- ifelse(placmet_M_fulldata_auto$probes %in% maleauto_bio_sig$probes, placmet_M_fulldata_auto$Closest_TSS_gene_name, NA)
-male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB_M, y = -log10(adj.P.Val_M), col = diffmethylation_M, label=siglabel)) + 
+male_auto <- ggplot(data = placmet_M_fulldata_auto, aes(x = deltaB_M, y = -log10(adj.P.Val_M), col = diffmethylation_M)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) + 
-  geom_text_repel(max.overlaps = Inf,
-                  segment.size = 0.5) +
   theme_bw() +
   ylab(" ") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
+  scale_x_continuous(breaks = seq(-0.15, 0.25, by = 0.1), limits = c(-0.15, 0.25)) +
   scale_color_manual(values = c("#d02670", "#8a00c4", "grey"), 
-                     labels = c("Not_Biologically_Significant", "Decreased Methylation", "Increased Methylation"),
                      guide = "none")
 placmet_F_fulldata_auto$siglabel <- ifelse(placmet_F_fulldata_auto$probes %in% femaleauto_bio_sig$probes, placmet_F_fulldata_auto$Closest_TSS_gene_name, NA)
-female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log10(adj.P.Val_F), col = diffmethylation_F, label=siglabel)) + 
+female_auto <- ggplot(data = placmet_F_fulldata_auto, aes(x = deltaB_F, y = -log10(adj.P.Val_F), col = diffmethylation_F)) + 
   geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) + 
-  geom_text_repel(max.overlaps = Inf,
-                  segment.size = 0.5) +
-  theme_bw() +
-  ylab(" ") +
+   theme_bw() +
+  ylab("-log10(FDR)") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.35, 0.35, by = 0.1), limits = c(-0.35, 0.35)) +
+  scale_x_continuous(breaks = seq(-0.15, 0.25, by = 0.1), limits = c(-0.15, 0.25)) +
   scale_color_manual(values = c("#d02670", "grey"), 
-                     labels = c("Not Biologically Significant", "Increased Methylation"),
                      guide = "none")
 
-png("./wholepop_autosome_vol_adjFunnorm_panel.png", height = 9, width = 12, units = "in", res = 300)
+png("./wholepop_autosome_vol_adjFunnorm_panel.png", height = 9, width = 15, units = "in", res = 300)
 grid.arrange(wholepop_auto, nrow = 1)
 #Warning messages:
   1: Removed 1 row containing missing values or values outside the scale range(`geom_point()`).
@@ -448,7 +439,7 @@ grid.arrange(wholepop_auto, nrow = 1)
   range (`geom_text_repel()`).
 dev.off()
 
-png("./fetalsex_autosome_vol_adjFunnorm_panel_labeled.png", height = 9, width = 12, units = "in", res = 300)
+png("./fetalsex_autosome_vol_adjFunnorm_panel_labeled.png", height = 9, width = 15, units = "in", res = 300)
 grid.arrange(female_auto, male_auto, nrow = 1)
 #Warning messages:
   1: Removed 1 row containing missing values or values outside the scale range(`geom_point()`).
@@ -467,8 +458,8 @@ male_X <- ggplot(data = placmet_M_fulldata_X, aes(x = deltaB, y = -log10(adj.P.V
         axis.title = element_text(size = 14)) +
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
-                     limits = c(-0.30,0.30), 
+  scale_x_continuous(breaks = seq(-0.1, 0.1, by = 0.1), 
+                     limits = c(-0.1,0.1), 
                      labels = label_number(accuracy = 0.1))  +
   scale_color_manual(values = c("gray", "#d02670"), 
                      labels = c("Not Biologically Significant", "Increased Methylation"),
@@ -484,13 +475,13 @@ female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P
         axis.title = element_text(size = 14)) +
   xlab("Delta Beta") +
   scale_y_continuous(breaks = seq(0, 3, by = 0.5), limits = c(0, 3)) +
-  scale_x_continuous(breaks = seq(-0.3, 0.3, by = 0.1), 
-                     limits = c(-0.30,0.30), 
+  scale_x_continuous(breaks = seq(-0.1, 0.1, by = 0.1), 
+                     limits = c(-0.1,0.1), 
                      labels = label_number(accuracy = 0.1)) +
   scale_color_manual(values = c("gray", "#d02670"), 
                      labels = c("Not Biologically Significant", "Increased Methylation"),
                      guide = "none")
-png("./X_vol_adjFunnorm_panel.png", height = 9, width = 12, units = "in", res = 300)
+png("./X_vol_adjFunnorm_panel.png", height = 9, width = 15, units = "in", res = 300)
 grid.arrange(female_X, male_X, nrow = 1)
 dev.off()
 
@@ -510,7 +501,6 @@ limch1_cmip_probes_betas$cmip_probe_avg <- (limch1_cmip_probes_betas$cg03766174 
 limch1_cmip_probes_betas_metadata <- merge(limch1_cmip_probes_betas, metadata[, c("Sample_Name", "pathology_group", "Fetal_Sex")], by = "Sample_Name", all.x = TRUE)
 
 library(tidyverse)
-library(palmerpenguins)
   
 limch1 <-ggplot(limch1_cmip_probes_betas_metadata, aes(Fetal_Sex, cg03822934, group = Fetal_Sex)) +
   geom_jitter(aes(color = Fetal_Sex),
@@ -518,23 +508,20 @@ limch1 <-ggplot(limch1_cmip_probes_betas_metadata, aes(Fetal_Sex, cg03822934, gr
     alpha = 0.8,
     position = position_jitterdodge()) +
   theme_bw() +
-  ylab("Delta Beta") +
+  ylab("Beta Value") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Pathology") +
   scale_y_continuous(breaks = seq(0.4, 1, by = 0.05), limits = c(0.4, 1)) +
-  stat_summary(fun.data = function(x) {
-      mean_val <- mean(x)
-      sem_val <- sd(x) / sqrt(length(x))  # Calculate SEM
-      data.frame(y = mean_val, ymin = mean_val - sem_val, ymax = mean_val + sem_val)},
-    position = position_dodge(width = .75)) +
   scale_color_manual(values = c("#FF10F0", "blue"))+
   facet_wrap(~pathology_group, strip.position = "bottom") +
   theme(panel.spacing.x = unit(0, "pt"),
     strip.placement = "outside",
     strip.background.x = element_blank(), 
     strip.text = element_text(size = 14)) +
-  guides(color = "none")
+  guides(color = "none") + 
+  stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge", size = 1, width = 0.1)
+
 png("./LIMCH1_scatterplot_v2.png", height = 9, width = 12, units = "in", res = 300)
 grid.arrange(limch1, nrow = 1)
 dev.off()
@@ -542,23 +529,19 @@ dev.off()
 cmip_all_probes <-ggplot(limch1_cmip_probes_betas_metadata, aes(Fetal_Sex, cmip_probe_avg, group = Fetal_Sex)) +
   geom_jitter(aes(color = Fetal_Sex), size = 3, alpha = 0.8, position = position_jitterdodge()) +
   theme_bw() +
-  ylab("Delta Beta") +
+  ylab("Beta Value") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Pathology") +
   scale_y_continuous(breaks = seq(0.4, 1, by = 0.05), limits = c(0.4, 1)) +
-  stat_summary(fun.data = function(x) {
-      mean_val <- mean(x)
-      sem_val <- sd(x) / sqrt(length(x))  # Calculate SEM
-      data.frame(y = mean_val, ymin = mean_val - sem_val, ymax = mean_val + sem_val)},
-    position = position_dodge(width = .75)) +
   scale_color_manual(values = c("#FF10F0", "blue"))+
   facet_wrap(~pathology_group, strip.position = "bottom") +
   theme(panel.spacing.x = unit(0, "pt"),
     strip.placement = "outside",
     strip.background.x = element_blank(), 
     strip.text = element_text(size = 14)) +
-  guides(color = "none")
+  guides(color = "none") + 
+  stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge", size = 1, width = 0.1)
   
 png("./CMIP_avg_probes_scatterplot.png", height = 9, width = 12, units = "in", res = 300)
 grid.arrange(cmip_all_probes, nrow = 1)
@@ -570,25 +553,21 @@ cmip_sig_probe <-ggplot(limch1_cmip_probes_betas_metadata, aes(Fetal_Sex, cg1024
     alpha = 0.8,
     position = position_jitterdodge()) +
   theme_bw() +
-  ylab("Delta Beta") +
+  ylab("Beta Value") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Pathology") +
   scale_y_continuous(breaks = seq(0.4, 1, by = 0.05), limits = c(0.4, 1)) +
-  stat_summary(fun.data = function(x) {
-      mean_val <- mean(x)
-      sem_val <- sd(x) / sqrt(length(x))  # Calculate SEM
-      data.frame(y = mean_val, ymin = mean_val - sem_val, ymax = mean_val + sem_val)},
-    position = position_dodge(width = .75)) +
   scale_color_manual(values = c("#FF10F0", "blue"))+
   facet_wrap(~pathology_group, strip.position = "bottom") +
   theme(panel.spacing.x = unit(0, "pt"),
     strip.placement = "outside",
     strip.background.x = element_blank(), 
     strip.text = element_text(size = 14)) +
-  guides(color = "none")
+  guides(color = "none") + 
+  stat_summary(geom = "errorbar", fun.data = mean_se, position = "dodge", size = 1, width = 0.1)
+
   
 png("./CMIP_sig_probe_scatterplot.png", height = 9, width = 12, units = "in", res = 300)
 grid.arrange(cmip_sig_probe, nrow = 1)
 dev.off()
-
