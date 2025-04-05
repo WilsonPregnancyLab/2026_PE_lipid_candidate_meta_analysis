@@ -470,7 +470,7 @@ female_X <- ggplot(data = placmet_F_fulldata_X, aes(x = deltaB, y = -log10(adj.P
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_point(shape = 19, alpha = 0.4, size = 3) +
   theme_bw() +
-  ylab("-log10(adjusted P.Value)") +
+  ylab("-log10(FDR)") +
   theme(axis.text = element_text(size = 12.5),
         axis.title = element_text(size = 14)) +
   xlab("Delta Beta") +
