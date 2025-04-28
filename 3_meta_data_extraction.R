@@ -1,6 +1,6 @@
 # R Version - R4.4.1
 # Packages
-library(GEOquery) 
+library(GEOquery) #version 2.72.0
 
 # Extracting Metadata from GEO for each data set
 # Metadata is qualitative information about each sample (ex. fetal sex, control/case, tissue type)
