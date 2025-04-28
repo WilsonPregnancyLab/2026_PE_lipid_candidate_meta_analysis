@@ -1,50 +1,47 @@
 # Packages (Run)
-library(limma) #version 3.60.4
+library(limma) #version 3.60.6
 library(lumi) #version 2.56.0
 library(stringr) #version 1.5.1
 library(ggplot2) #version 3.5.1
 library(gridExtra) #version 2.3
 library(ggrepel) #version 0.9.5
-library(minfi)
-library(wateRmelon)
-library(dplyr)
+library(minfi) #version 1.50.0
+library(wateRmelon) #version 2.10.0
+library(dplyr) #version 1.1.4
 
 # Load in probe annotation files and lipid candidate gene file 
-library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
+library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) #version 0.6.0
 probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Locations, 
                                  IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Other, 
                                  IlluminaHumanMethylationEPICanno.ilm10b4.hg19::Manifest))
-price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
-lipid_candidate <- read.csv("/workspace/lab/wilsonslab/eyerk/lipid_candidate_gene_files/all_lipid_genes.csv")
+price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
+lipid_candidate <- read.csv("/workspace/lab/wilsonslab/eyerk/2025_Windowed_Lipid_Candidate/Lipid_Candidate_Gene_Search/lipid_genes_unique.csv")
 
-# Subset price_anno annotation file so that it only includes my lipid genes + Add LIPJ (gene to be investigated)
-lipid_gene_probes_noanno <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_candidate$Gene.Symbol, ]
-lipj_rows <- price_anno[price_anno$Closest_TSS_gene_name == "LIPJ",]
-lipid_gene_probes_noanno <- rbind(lipid_gene_probes_noanno, lipj_rows)
-write.csv(lipid_gene_probes_noanno, "lipid_gene_probes_noanno.csv") #71983 probes
+# Subset price_anno annotation file so that it only includes my lipid genes
+lipid_candidate_anno <- price_anno[price_anno$Closest_TSS_gene_name %in% lipid_candidate$gene_symbol, ]
+write.csv(lipid_candidate_anno, "lipid_candidate_anno.csv") #121801 probes
 # merge the chromosome column from probeInfo into lipid_gene_probes to annotate which chromosome the lipid gene is on
-lipid_gene_probes <- merge(lipid_gene_probes_noanno, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
+lipid_candidate_probes <- merge(lipid_candidate_anno, probeInfo[, c("Name", "chr")], by.x = "ID", by.y = "Name", all.x = TRUE)
 # supplement all the chromosomes that couldn't be identified with the values in the HIL_CpG_Island_Name column
-lipid_gene_probes$chr <- ifelse(is.na(lipid_gene_probes$chr),sub(".*(chr[0-9XY]+)_.*", "\\1", lipid_gene_probes$HIL_CpG_Island_Name),lipid_gene_probes$chr)
-lipid_gene_probes$chr <- replace(lipid_gene_probes$chr, !grepl("^chr", lipid_gene_probes$chr), NA)
-write.csv(lipid_gene_probes, "lipid_gene_probes.csv")
-lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
+lipid_candidate_probes$chr <- ifelse(is.na(lipid_candidate_probes$chr),sub(".*(chr[0-9XY]+)_.*", "\\1", lipid_candidate_probes$HIL_CpG_Island_Name),lipid_candidate_probes$chr)
+lipid_candidate_probes$chr <- replace(lipid_candidate_probes$chr, !grepl("^chr", lipid_candidate_probes$chr), NA)
+write.csv(lipid_candidate_probes, "lipid_candidate_probes.csv")
 
 # Checking Number of Probes that will be excluded
 #SNP_probes
-lipid_gene_probes_SNP <- subset(lipid_gene_probes, lipid_gene_probes$n_target.CpG.SNP>0) #3271 probes
-lipid_gene_probes_Hyb <- subset(lipid_gene_probes, lipid_gene_probes$XY_Hits == "XY_YES" | lipid_gene_probes$Autosomal_Hits == "A_YES") #4858 probes
+lipid_candidate_probes_SNP <- subset(lipid_candidate_probes, lipid_candidate_probes$n_target.CpG.SNP>0) #5202 probes
+lipid_candidate_probes_Hyb <- subset(lipid_candidate_probes, lipid_candidate_probes$XY_Hits == "XY_YES" | lipid_candidate_probes$Autosomal_Hits == "A_YES") #7831 probes
 nonvarplac_anno <- read.csv("/workspace/lab/wilsonslab/lemairem/annotations/Invariant_Placenta_CpGs.csv", sep = ",") 
-lipid_gene_probes_nonvarplac <- subset(lipid_gene_probes, lipid_gene_probes$ID %in% nonvarplac_anno$CpG,) #15735 probes
+lipid_candidate_probes_nonvarplac <- subset(lipid_candidate_probes, lipid_candidate_probes$ID %in% nonvarplac_anno$CpG,) #28200 probes
 
 #Probe annotations 
 
-chrXprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrX") #1339 probes
-chrYprobes <- subset(lipid_gene_probes, lipid_gene_probes$chr == "chrY") #2 probes
-NAprobes <- subset(lipid_gene_probes, is.na(lipid_gene_probes$chr)) #1820 probes
+chrXprobes <- subset(lipid_candidate_probes, lipid_candidate_probes$chr == "chrX") #2298 probes
+chrYprobes <- subset(lipid_candidate_probes, lipid_candidate_probes$chr == "chrY") #0 probes
+NAprobes <- subset(lipid_candidate_probes, is.na(lipid_candidate_probes$chr)) #2896 probes
 
 #Creating groups for sex stratification
-metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
 metadata$pathology_group <- as.factor(metadata$pathology_group)
 metadata$Fetal_Sex <- as.factor(metadata$Fetal_Sex)
 metadata$Sentrix_ID <- as.factor(metadata$Sentrix_ID)
@@ -70,9 +67,9 @@ females$Sentrix_Position <- as.factor(females$Sentrix_Position)
 females$GSE_number <- as.factor(females$GSE_number)
 
 # Read the filtered and normalized RG sets
-placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
+placmet_adjFunnorm_allfiltered <- readRDS("/workspace/lab/wilsonslab/eyerk/2025_Thesis_Lipid_Candidate/R_entries/placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
 placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
-placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,] #dim 49225 180
+placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_candidate_probes$ID,] #dim 82401 180
 placmet_adjFunnorm_filtfun_F <- placmet_adjFunnorm_filtbetas[, females$Sample_Name]
 # 87 females - gives all the GSMs in either Control or PE that are female 
 placmet_adjFunnorm_filtfun_M <- placmet_adjFunnorm_filtbetas[, males$Sample_Name]
@@ -95,23 +92,23 @@ PEmetadata_M <- subset(males, males$pathology_group == "PE")
 # Total population Betas table 
 # Autosomal Only Probes included for Beta Table
 
-placmet_PE_all_autosomes <- as.data.frame(placmet_adjFunnorm_filtbetas[rownames(placmet_adjFunnorm_filtbetas) %in% lipid_gene_probes$ID & !(rownames(placmet_adjFunnorm_filtbetas) %in% c(chrXprobes$ID, chrYprobes$ID, NAprobes$ID)), PEmetadata_all$Sample_Name]) #dim 46613 100
-placmet_CONT_all_autosomes <- as.data.frame(placmet_adjFunnorm_filtbetas[rownames(placmet_adjFunnorm_filtbetas) %in% lipid_gene_probes$ID & !(rownames(placmet_adjFunnorm_filtbetas) %in% c(chrXprobes$ID, chrYprobes$ID, NAprobes$ID)), Controlmetadata_all$Sample_Name]) #dim 46613 80
+placmet_PE_all_autosomes <- as.data.frame(placmet_adjFunnorm_filtbetas[!rownames(placmet_adjFunnorm_filtbetas) %in% c(chrXprobes$ID, chrYprobes$ID, NAprobes$ID), PEmetadata_all$Sample_Name]) #dim 78093 100
+placmet_CONT_all_autosomes <- as.data.frame(placmet_adjFunnorm_filtbetas[!rownames(placmet_adjFunnorm_filtbetas) %in% c(chrXprobes$ID, chrYprobes$ID, NAprobes$ID), Controlmetadata_all$Sample_Name]) #dim 78093 80
 placmet_CONT_all_autosomes$AvgBetaCONT <- rowMeans(placmet_CONT_all_autosomes)
 placmet_CONT_all_autosomes$ProbeCONT <- rownames(placmet_CONT_all_autosomes)
 placmet_PE_all_autosomes$AvgBetaPE <- rowMeans(placmet_PE_all_autosomes)
 placmet_PE_all_autosomes$ProbePE <- rownames(placmet_PE_all_autosomes)
 # Merge All Table 
 placmet_AllAvgbetas_autosomes <- merge(placmet_CONT_all_autosomes[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_all_autosomes[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_AllAvgbetas_autosomes$deltaB <- placmet_AllAvgbetas_autosomes$AvgBetaCONT - placmet_AllAvgbetas_autosomes$AvgBetaPE 
+placmet_AllAvgbetas_autosomes$deltaB <- placmet_AllAvgbetas_autosomes$AvgBetaPE - placmet_AllAvgbetas_autosomes$AvgBetaCONT
 rownames(placmet_AllAvgbetas_autosomes) <- placmet_AllAvgbetas_autosomes$ProbeCont
 write.csv(placmet_AllAvgbetas_autosomes, "./placmet_AllAvgbetas_autosomes.csv")
 
 # Male population Betas table 
 
 #Autosomes
-placmet_PE_M_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_M[!rownames(placmet_adjFunnorm_filtfun_M) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), PEmetadata_M$Sample_Name])#dim: 46613, 52
-placmet_CONT_M_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_M[!rownames(placmet_adjFunnorm_filtfun_M) %in% c(chrXprobes$ID,chrYprobes$ID, NAprobes$ID), Controlmetadata_M$Sample_Name]) #dim: 46613, 41
+placmet_PE_M_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_M[!rownames(placmet_adjFunnorm_filtfun_M) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), PEmetadata_M$Sample_Name])#dim: 78093, 52
+placmet_CONT_M_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_M[!rownames(placmet_adjFunnorm_filtfun_M) %in% c(chrXprobes$ID,chrYprobes$ID, NAprobes$ID), Controlmetadata_M$Sample_Name]) #dim: 78093, 41
 # calculate Male average betas
 placmet_CONT_M_autosomes$AvgBetaCONT <- rowMeans(placmet_CONT_M_autosomes)
 placmet_CONT_M_autosomes$ProbeCONT <- rownames(placmet_CONT_M_autosomes)
@@ -119,13 +116,13 @@ placmet_PE_M_autosomes$AvgBetaPE <- rowMeans(placmet_PE_M_autosomes)
 placmet_PE_M_autosomes$ProbePE <- rownames(placmet_PE_M_autosomes)
 # Merge Male Table 
 placmet_MaleAvgbetas_autosomes <- merge(placmet_CONT_M_autosomes[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_M_autosomes[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_MaleAvgbetas_autosomes$deltaB <- placmet_MaleAvgbetas_autosomes$AvgBetaCONT - placmet_MaleAvgbetas_autosomes$AvgBetaPE 
+placmet_MaleAvgbetas_autosomes$deltaB <- placmet_MaleAvgbetas_autosomes$AvgBetaPE - placmet_MaleAvgbetas_autosomes$AvgBetaCONT
 rownames(placmet_MaleAvgbetas_autosomes) <- placmet_MaleAvgbetas_autosomes$ProbeCont
 write.csv(placmet_MaleAvgbetas_autosomes, "./placmet_MaleAvgbetas_autosomes.csv")
 
 #Male X Chromosome 
-placmet_PE_M_X <-  as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrXprobes$ID, PEmetadata_M$Sample_Name]) #dim: 1216, 52
-placmet_CONT_M_X <- as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrXprobes$ID, Controlmetadata_M$Sample_Name]) #dim: 1216, 41
+placmet_PE_M_X <-  as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrXprobes$ID, PEmetadata_M$Sample_Name]) #dim: 2097, 52
+placmet_CONT_M_X <- as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) %in% chrXprobes$ID, Controlmetadata_M$Sample_Name]) #dim: 2097, 41
 # calculate Male X average betas
 placmet_CONT_M_X$AvgBetaCONT <- rowMeans(placmet_CONT_M_X)
 placmet_CONT_M_X$ProbeCONT <- rownames(placmet_CONT_M_X)
@@ -133,7 +130,7 @@ placmet_PE_M_X$AvgBetaPE <- rowMeans(placmet_PE_M_X)
 placmet_PE_M_X$ProbePE <- rownames(placmet_PE_M_X)
 # Merge Male X Table 
 placmet_MaleAvgbetas_X <- merge(placmet_CONT_M_X[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_M_X[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_MaleAvgbetas_X$deltaB <- placmet_MaleAvgbetas_X$AvgBetaCONT - placmet_MaleAvgbetas_X$AvgBetaPE 
+placmet_MaleAvgbetas_X$deltaB <- placmet_MaleAvgbetas_X$AvgBetaPE - placmet_MaleAvgbetas_X$AvgBetaCONT
 rownames(placmet_MaleAvgbetas_X) <- placmet_MaleAvgbetas_X$ProbeCont
 write.csv(placmet_MaleAvgbetas_X, "./placmet_MaleAvgbetas_X.csv")
 
@@ -144,8 +141,8 @@ placmet_CONT_M_Y <- as.data.frame(placmet_adjFunnorm_filtfun_M[rownames(placmet_
 # Female population Betas table 
 
 #Female Autosomes
-placmet_PE_F_autosomes <-  as.data.frame(placmet_adjFunnorm_filtfun_F[!rownames(placmet_adjFunnorm_filtfun_F) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), PEmetadata_F$Sample_Name]) #dim: 46613, 48
-placmet_CONT_F_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_F[!rownames(placmet_adjFunnorm_filtfun_F) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), Controlmetadata_F$Sample_Name]) #dim: 46613, 39
+placmet_PE_F_autosomes <-  as.data.frame(placmet_adjFunnorm_filtfun_F[!rownames(placmet_adjFunnorm_filtfun_F) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), PEmetadata_F$Sample_Name]) #dim: 78093, 48
+placmet_CONT_F_autosomes <- as.data.frame(placmet_adjFunnorm_filtfun_F[!rownames(placmet_adjFunnorm_filtfun_F) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID), Controlmetadata_F$Sample_Name]) #dim: 78093, 39
 # calculate Female average betas
 placmet_CONT_F_autosomes$AvgBetaCONT <- rowMeans(placmet_CONT_F_autosomes)
 placmet_CONT_F_autosomes$ProbeCONT <- rownames(placmet_CONT_F_autosomes)
@@ -153,13 +150,13 @@ placmet_PE_F_autosomes$AvgBetaPE <- rowMeans(placmet_PE_F_autosomes)
 placmet_PE_F_autosomes$ProbePE <- rownames(placmet_PE_F_autosomes)
 # Merge Female Table 
 placmet_FemaleAvgbetas_autosomes <- merge(placmet_CONT_F_autosomes[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_F_autosomes[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_FemaleAvgbetas_autosomes$deltaB <- placmet_FemaleAvgbetas_autosomes$AvgBetaCONT - placmet_FemaleAvgbetas_autosomes$AvgBetaPE 
+placmet_FemaleAvgbetas_autosomes$deltaB <- placmet_FemaleAvgbetas_autosomes$AvgBetaPE - placmet_FemaleAvgbetas_autosomes$AvgBetaCONT
 rownames(placmet_FemaleAvgbetas_autosomes) <- placmet_FemaleAvgbetas_autosomes$ProbeCont
 write.csv(placmet_FemaleAvgbetas_autosomes, "./placmet_FemaleAvgbetas_autosomes.csv")
 
 #Female X Chromosome 
-placmet_PE_F_X <-  as.data.frame(placmet_adjFunnorm_filtfun_F[rownames(placmet_adjFunnorm_filtfun_F) %in% chrXprobes$ID, PEmetadata_F$Sample_Name])  #dim: 1216, 48
-placmet_CONT_F_X <- as.data.frame(placmet_adjFunnorm_filtfun_F[rownames(placmet_adjFunnorm_filtfun_F) %in% chrXprobes$ID, Controlmetadata_F$Sample_Name])  #dim: 1216, 39
+placmet_PE_F_X <-  as.data.frame(placmet_adjFunnorm_filtfun_F[rownames(placmet_adjFunnorm_filtfun_F) %in% chrXprobes$ID, PEmetadata_F$Sample_Name])  #dim: 2097, 48
+placmet_CONT_F_X <- as.data.frame(placmet_adjFunnorm_filtfun_F[rownames(placmet_adjFunnorm_filtfun_F) %in% chrXprobes$ID, Controlmetadata_F$Sample_Name])  #dim: 2097, 39
 # calculate Female X average betas
 placmet_CONT_F_X$AvgBetaCONT <- rowMeans(placmet_CONT_F_X)
 placmet_CONT_F_X$ProbeCONT <- rownames(placmet_CONT_F_X)
@@ -167,13 +164,13 @@ placmet_PE_F_X$AvgBetaPE <- rowMeans(placmet_PE_F_X)
 placmet_PE_F_X$ProbePE <- rownames(placmet_PE_F_X)
 # Merge Female X Table 
 placmet_FemaleAvgbetas_X <- merge(placmet_CONT_F_X[,c("AvgBetaCONT","ProbeCONT")], placmet_PE_F_X[,c("AvgBetaPE","ProbePE")], by = "row.names")
-placmet_FemaleAvgbetas_X$deltaB <- placmet_FemaleAvgbetas_X$AvgBetaCONT - placmet_FemaleAvgbetas_X$AvgBetaPE 
+placmet_FemaleAvgbetas_X$deltaB <- placmet_FemaleAvgbetas_X$AvgBetaPE - placmet_FemaleAvgbetas_X$AvgBetaCONT
 rownames(placmet_FemaleAvgbetas_X) <- placmet_FemaleAvgbetas_X$ProbeCont
 write.csv(placmet_FemaleAvgbetas_X, "./placmet_FemaleAvgbetas_X.csv")
 
 #m value inputs for linear models 
 #Whole population 
-placmet_adjFunnorm_MVal <- beta2m(placmet_adjFunnorm_filtbetas) #dim 49225, 180
+placmet_adjFunnorm_MVal <- beta2m(placmet_adjFunnorm_filtbetas) #dim 82401, 180
 write.csv(placmet_adjFunnorm_MVal, "./placmet_adjFunnorm_MVal.csv")
 #whole population Mvalues - Autosomes
 Mval_whole_auto <- placmet_adjFunnorm_MVal[!rownames(placmet_adjFunnorm_MVal) %in% c(chrXprobes$ID,chrYprobes$ID,NAprobes$ID),] #46613, 180
