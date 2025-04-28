@@ -7,11 +7,11 @@ BiocManager::install("IlluminaHumanMethylation450kanno.ilmn12.hg19", update =F)
 BiocManager::install("wateRmelon", update =F)
 
 # Packages (Run)
-library(minfi)
-library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
-library(IlluminaHumanMethylation450kmanifest)
-library(magrittr)
-library(wateRmelon)
+library(minfi) #version 1.50.0
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19) #version 0.6.1
+library(IlluminaHumanMethylation450kmanifest) #version 0.4.0
+library(magrittr) #version 2.0.3
+library(wateRmelon) #version 2.10.0
 
 #Load Base Directories (each directory should have all red and green IDATs + one sample sheet as a .csv)
 baseDir98224 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE98224_untar_unzip")
