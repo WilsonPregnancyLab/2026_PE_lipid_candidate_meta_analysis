@@ -20,7 +20,7 @@ placmet_F_fulldata_X <- read.csv("placmet_F_fulldata_X.csv")
 
 #adj p-Values density plot
 png(filename = "./adjPval_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_wholepop_auto$adj.P.Val), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 6), 
+plot(density(placmet_wholepop_auto$adj.P.Val), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 7), 
      xlab = "Adjusted P-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
   lines(density(placmet_M_fulldata_auto$adj.P.Val), col = "#8EC9FF",lwd = 3) +
   lines(density(placmet_F_fulldata_auto$adj.P.Val), col = "#E67000", lwd = 3) +
@@ -33,7 +33,7 @@ dev.off()
 
 # P Values density plot
 png(filename = "./Pval_autosomes_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_wholepop_auto$P.Value), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 5), 
+plot(density(placmet_wholepop_auto$P.Value), col = "#F7D56E", lwd = 3,xlim = c(0,1), ylim = c(0, 3), 
      xlab = "P-Value (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
   lines(density(placmet_M_fulldata_auto$P.Value), col = "#8EC9FF",lwd = 3) +
   lines(density(placmet_F_fulldata_auto$P.Value), col = "#E67000", lwd = 3) +
@@ -46,7 +46,7 @@ dev.off()
 
 # delta-beta density plot
 png(filename = "./deltaB_adjFunnorm.png", height = 9, width = 9, units = "in", res = 300)
-plot(density(placmet_wholepop_auto$deltaB), col = "#F7D56E", lwd = 3,xlim = c(-0.01, 0.16), ylim = c(0, 60), 
+plot(density(placmet_wholepop_auto$deltaB), col = "#F7D56E", lwd = 3,xlim = c(-0.01, 0.16), ylim = c(0, 70), 
      xlab = "Delta Beta (N = 44637 probes)", ylab = "Density", main = " ", cex.lab = 1.2) +
   lines(density(placmet_M_fulldata_auto$deltaB), col = "#8EC9FF",lwd = 3) +
   lines(density(placmet_F_fulldata_auto$deltaB), col = "#E67000", lwd = 3) +
@@ -61,8 +61,8 @@ dev.off()
 
 placmet_adjFunnorm_allfiltered <- readRDS("placmet_adjFunnorm_allfiltered.rds") #dim 329533 180
 placmet_adjFunnorm_filtbetas_all <- getBeta(placmet_adjFunnorm_allfiltered)
-lipid_gene_probes <- read.csv("lipid_gene_probes.csv")
-placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_gene_probes$ID,] #dim 49220 180
+lipid_candidate_probes <- read.csv("lipid_candidate_probes.csv")
+placmet_adjFunnorm_filtbetas <- placmet_adjFunnorm_filtbetas_all[rownames(placmet_adjFunnorm_filtbetas_all) %in% lipid_candidate_probes$ID,] #dim 49220 180
 metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
 metadata$pathology_group <- as.factor(metadata$pathology_group)
 Controlmetadata_all <- subset(metadata, metadata$pathology_group == "Control") 
