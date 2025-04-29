@@ -5,33 +5,37 @@
     system('wget https://gemma.msl.ubc.ca/annots/Generic_human_ncbiIds_noParents.an.txt.gz')}
 NCBI <- read.table('Generic_human_ncbiIds_noParents.an.txt.gz', sep = '\t', header = T, quote = "")
 
+if(!file.exists('Generic_human_noParents.an.txt.gz')){
+    system('wget https://gemma.msl.ubc.ca/annots/Generic_human_noParents.an.txt.gz')}
+NCBI <- read.table('Generic_human_noParents.an.txt.gz', sep = '\t', header = T, quote = "")
+
 # Whole Population Autosomes
 placmet_wholepop_auto <- read.csv("placmet_wholepop_auto.csv")
-placmet_wholepop_auto_pval <- placmet_wholepop_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 46613 probes
+placmet_wholepop_auto_pval <- placmet_wholepop_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 78093 probes
 colnames(placmet_wholepop_auto_pval)[colnames(placmet_wholepop_auto_pval) == "Closest_TSS_gene_name"] <- "GeneSymbols"
-placmet_wholepop_auto_reference <- NCBI[NCBI$GeneSymbols %in% placmet_wholepop_auto_pval$GeneSymbols, ] #2845 genes
-placmet_wholepop_auto_pval <- placmet_wholepop_auto_pval[!duplicated(placmet_wholepop_auto_pval$GeneSymbols),] #2887 lipid genes investigated
+placmet_wholepop_auto_reference <- NCBI[NCBI$GeneSymbols %in% placmet_wholepop_auto_pval$GeneSymbols, ] #4743 genes
+placmet_wholepop_auto_pval <- placmet_wholepop_auto_pval[!duplicated(placmet_wholepop_auto_pval$GeneSymbols),] #4861 lipid genes investigated
 write.csv(placmet_wholepop_auto_pval, "placmet_wholepop_auto_pval.csv")
 write.csv(placmet_wholepop_auto_reference, "placmet_wholepop_auto_NCBI_reference.csv")
 
 # Female Autosomes
 placmet_F_auto <- read.csv("placmet_F_fulldata_auto.csv")
-placmet_F_auto_pval <- placmet_F_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 46613 probes
+placmet_F_auto_pval <- placmet_F_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 78093 probes
 colnames(placmet_F_auto_pval)[colnames(placmet_F_auto_pval) == "Closest_TSS_gene_name"] <- "GeneSymbols"
 write.csv(placmet_F_auto_pval, "placmet_F_auto_pval.csv")
 
 # Male Autosomes
 placmet_M_auto <- read.csv("placmet_M_fulldata_auto.csv")
-placmet_M_auto_pval <- placmet_M_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 46613 probes
+placmet_M_auto_pval <- placmet_M_auto[, c("Closest_TSS_gene_name", "adj.P.Val")] # 78093 probes
 colnames(placmet_M_auto_pval)[colnames(placmet_M_auto_pval) == "Closest_TSS_gene_name"] <- "GeneSymbols"
 write.csv(placmet_M_auto_pval, "placmet_M_auto_pval.csv")
 
 
 # Part 2: Pathway Enrichment Analysis
 devtools::install_github('PavlidisLab/ermineR')
-library(ermineR)
-library(dplyr)
-library(ggplot2)
+library(ermineR) #version 1.0.3.9000
+library(dplyr) #version 1.1.4
+library(ggplot2) #version 3.5.1
 install.packages("rJava")
 
 Sys.setenv('JAVA_HOME' = '/usr/lib/jvm/java-21-openjdk-amd64/')
@@ -50,7 +54,7 @@ all_wholepop_auto_pr_out <- precRecall(annotation = placmet_wholepop_auto_refere
 
 all_wholepop_auto_pathway_analysis <- as.data.frame(all_wholepop_auto_pr_out$results)
 
-sig_pathways_wholepop_auto <- all_wholepop_auto_pathway_analysis[all_wholepop_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_wholepop_auto_pathway_analysis$Multifunctionality < 0.5,] #2
+sig_pathways_wholepop_auto <- all_wholepop_auto_pathway_analysis[all_wholepop_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_wholepop_auto_pathway_analysis$Multifunctionality < 0.5,] #0
 sig_pathways_wholepop_auto <- sig_pathways_wholepop_auto %>% distinct(GeneMembers, .keep_all = T)
 write.csv(sig_pathways_wholepop_auto, '2025_wholepop_auto_enriched_lipid_pathways.csv')
 # 2887 lipid genes & filtered reference: there were 656 pathways in the analysis, 2 sig enriched pathways
@@ -64,7 +68,7 @@ all_F_auto_pr_out <- precRecall(annotation = placmet_wholepop_auto_reference,
 
 all_F_auto_pathway_analysis <- as.data.frame(all_F_auto_pr_out$results)
 
-sig_pathways_F_auto <- all_F_auto_pathway_analysis[all_F_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_F_auto_pathway_analysis$Multifunctionality < 0.5,] #2
+sig_pathways_F_auto <- all_F_auto_pathway_analysis[all_F_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_F_auto_pathway_analysis$Multifunctionality < 0.5,] #0
 sig_pathways_F_auto <- sig_pathways_F_auto %>% distinct(GeneMembers, .keep_all = T)
 write.csv(sig_pathways_F_auto, '2025_F_auto_enriched_lipid_pathways.csv')
 # 2887 lipid genes & filtered reference: there were 656 pathways in the analysis, 0 sig enriched pathways
@@ -78,7 +82,7 @@ all_M_auto_pr_out <- precRecall(annotation = placmet_wholepop_auto_reference,
 
 all_M_auto_pathway_analysis <- as.data.frame(all_M_auto_pr_out$results)
 
-sig_pathways_M_auto <- all_M_auto_pathway_analysis[all_M_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_M_auto_pathway_analysis$Multifunctionality < 0.5,] #2
+sig_pathways_M_auto <- all_M_auto_pathway_analysis[all_M_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_M_auto_pathway_analysis$Multifunctionality < 0.5,] #0
 sig_pathways_M_auto <- sig_pathways_M_auto %>% distinct(GeneMembers, .keep_all = T)
 write.csv(sig_pathways_M_auto, '2025_M_auto_enriched_lipid_pathways.csv')
 # 2887 lipid genes & filtered reference: there were 1764 pathways in the analysis, 0 sig enriched pathways
