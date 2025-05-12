@@ -57,22 +57,24 @@ adjFunnorm_pca_df$Fetal_Sex <- metadata$Fetal_Sex
 adjFunnorm_pca_df$pathology_group <- metadata$pathology_group
 
 # Plot
-PCA_noNorm <- ggplot(noNorm_pca_df, aes(x = PC1, y = PC2, color = GSE_number)) +
+PCA_noNorm <- ggplot(noNorm_pca_df, aes(x = PC1, y = PC2, color = GSE_number, fill = GSE_number)) +
   geom_point(size = 3) +
   theme_classic() +  
-  scale_x_continuous(breaks = seq(-1000, 750, by = 250), limits = c(-1000, 750)) +
-  scale_y_continuous(breaks = seq(-500, 500, by = 250), limits = c(-500, 500)) +
+  scale_x_continuous(breaks = seq(-1000, 800, by = 250), limits = c(-1000, 800)) +
+  scale_y_continuous(breaks = seq(-700, 600, by = 250), limits = c(-700, 600)) +
   ylab("PC2 (10.8%)") +
   xlab("PC1 (32.6%)") + 
+  stat_ellipse(geom="polygon", level = 0.95, alpha = 0.2) +
   labs(title = "PCA Before Functional Normalization")
 
-PCA_adjFunnorm <- ggplot(adjFunnorm_pca_df, aes(x = PC1, y = PC2, color = GSE_number)) +
+PCA_adjFunnorm <- ggplot(adjFunnorm_pca_df, aes(x = PC1, y = PC2, color = GSE_number, fill = GSE_number)) +
   geom_point(size = 3) +
   theme_classic() +
-  scale_x_continuous(breaks = seq(-1000, 750, by = 250), limits = c(-1000, 750)) +
-  scale_y_continuous(breaks = seq(-500, 500, by = 250), limits = c(-500, 500)) +  
+  scale_x_continuous(breaks = seq(-1000, 800, by = 250), limits = c(-1000, 800)) +
+  scale_y_continuous(breaks = seq(-700, 600, by = 250), limits = c(-700, 600)) +  
   ylab("PC2 (9.7%)") +
   xlab("PC1 (12.2%)") + 
+  stat_ellipse(geom="polygon", level = 0.95, alpha = 0.2) +
   labs(title = "PCA After Functional Normalization")
 
 png("./PCA_Bef_Aft_Norm.png", height = 9, width = 30, units = "in", res = 300)
