@@ -62,6 +62,8 @@ PCA_noNorm <- ggplot(noNorm_pca_df, aes(x = PC1, y = PC2, color = GSE_number, fi
   theme_classic() +  
   scale_x_continuous(breaks = seq(-1000, 800, by = 250), limits = c(-1000, 800)) +
   scale_y_continuous(breaks = seq(-700, 600, by = 250), limits = c(-700, 600)) +
+  geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   ylab("PC2 (10.8%)") +
   xlab("PC1 (32.6%)") + 
   stat_ellipse(geom="polygon", level = 0.95, alpha = 0.2) +
@@ -72,6 +74,8 @@ PCA_adjFunnorm <- ggplot(adjFunnorm_pca_df, aes(x = PC1, y = PC2, color = GSE_nu
   theme_classic() +
   scale_x_continuous(breaks = seq(-1000, 800, by = 250), limits = c(-1000, 800)) +
   scale_y_continuous(breaks = seq(-700, 600, by = 250), limits = c(-700, 600)) +  
+  geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
+  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   ylab("PC2 (9.7%)") +
   xlab("PC1 (12.2%)") + 
   stat_ellipse(geom="polygon", level = 0.95, alpha = 0.2) +
