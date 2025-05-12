@@ -66,7 +66,7 @@ probeInfo <- as.data.frame(cbind(IlluminaHumanMethylationEPICanno.ilm10b4.hg19::
 probeInfo$probeID <- rownames(probeInfo)
 chrXprobes <- subset(probeInfo, probeInfo$chr == "chrX")
 chrYprobes <- subset(probeInfo, probeInfo$chr == "chrY")
-metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+metadata <- read.csv("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
 
 males <- subset(metadata, metadata$Fetal_Sex == "M")
 females <- subset(metadata, metadata$Fetal_Sex == "F")
@@ -106,7 +106,7 @@ placmet_adjFunnorm_BPfilt <- placmet_adjFunnorm[!badProbes,]
 
 # Remove SNP probes
 # download full table from https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GPL16304
-price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
+price_anno <- read.delim("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/GSE_annotations/GPL16304-47833_no_legend.tsv",header=TRUE)
 price_anno_SNP <- subset(price_anno, price_anno$n_target.CpG.SNP>0)
 placmet_adjFunnorm_SNPremoved <- placmet_adjFunnorm_BPfilt[!rownames(placmet_adjFunnorm_BPfilt) %in% price_anno_SNP$ID,]
 
