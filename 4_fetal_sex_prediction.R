@@ -14,10 +14,10 @@ library(magrittr) #version 2.0.3
 library(wateRmelon) #version 2.10.0
 
 #Load Base Directories (each directory should have all red and green IDATs + one sample sheet as a .csv)
-baseDir98224 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE98224_untar_unzip")
-baseDir100197 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE100197_untar_unzip")
-baseDir125605 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE125605_untar_unzip")
-baseDir75196 <- ("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/raw_GSE_untar_unzip/GSE75196_untar_unzip")
+baseDir98224 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE98224_untar_unzip")
+baseDir100197 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE100197_untar_unzip")
+baseDir125605 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE125605_untar_unzip")
+baseDir75196 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE75196_untar_unzip")
 
 #Create targets 
 targets98224 <- read.metharray.sheet(baseDir98224)
