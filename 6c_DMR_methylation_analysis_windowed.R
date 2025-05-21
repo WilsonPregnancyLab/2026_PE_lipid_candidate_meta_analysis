@@ -121,6 +121,27 @@ DMR_Analysis <- function(beta, data){
   filename_bio_sig <- paste0(Bval_name, "_results_ranges_bio_sig.csv")
   write.csv(results_ranges_bio_sig, file = filename_bio_sig)
 
+  print("DMR_Volcano_Plot")
+  results_range_data <- as.data.frame(results_ranges)
+  DMR_plot <- ggplot(data = results_range_data, aes(x = meandiff, y = -log10(HMFDR), col = diffmethylation)) + 
+    geom_vline(xintercept = c(-0.05,0.05), col = "black", linetype = "dashed", linewidth = 0.75) +
+    geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
+    geom_point(shape = 19, alpha = 0.3, size = 3) + 
+    theme_bw() +
+    theme(axis.text = element_text(size = 12.5),
+          axis.title = element_text(size = 14)) +
+    ylab("-log10(FDR)") +
+    xlab("DMR Mean DeltaB") + 
+    scale_y_continuous(breaks = seq(0, 5.5, by = 0.5), limits = c(0, 5.5)) +
+    scale_x_continuous(breaks = seq(-0.10, 0.10, by = 0.05), limits = c(-0.10, 0.10)) +
+    scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
+                       guide = "none")
+
+  filename_vol_plot <- paste0(Bval_name, "_vol_DMR.png")
+  png(file = filename_vol_plot, height = 9, width = 15, units = "in", res = 300)
+  grid.arrange(DMR_plot, nrow = 1)
+  dev.off()
+
   print("DMR_GO_ENRICHMENT")
   enrichment_GO <- goregion(results_ranges[1:100], all.cpg = rownames(model), collection = "GO", array.type = "450K")
   enrichment_GO <- enrichment_GO[order(enrichment_GO$P.DE),]
@@ -129,30 +150,11 @@ DMR_Analysis <- function(beta, data){
 
 
 
-
 whole_auto_DMR <- DMR_Analysis(combined_auto_beta, metadata)
 male_auto_DMR <- DMR_Analysis(M_auto_beta, male)
 male_X_DMR <- DMR_Analysis(M_X_beta, male)
 female_auto_DMR <- DMR_Analysis(F_auto_beta, female)
 female_X_DMR <- DMR_Analysis(F_X_beta, female)
-
-
-# DMR Plotting
-    
-  print(DMR_PLOTTING)
-  groups <- c(PE = "Pink", Control = "Blue")
-  cols <- groups[as.character(type)]
-  DMR_Plot <- DMR.plot(ranges = results_ranges, dmr = 1, CpGs = model_annot, what="M",
-          arraytype = "450K", phen.col = cols, genome ="hg19")
-  filename <- paste0(Mval_name, "_DMR_Plot.png")
-  png(file = filename, height = 9, width = 15, units = "in", res = 300)
-  grid.arrange(DMR_Plot, nrow = 1)
-  dev.off()
-
-
-
-
-
 
 
 
