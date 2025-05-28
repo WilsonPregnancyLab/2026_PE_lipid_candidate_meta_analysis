@@ -58,7 +58,7 @@ M_X_beta <- placmet_adjFunnorm_filtfun_M[rownames(placmet_adjFunnorm_filtfun_M) 
 #DMR whole population autosomes
 
 DMR_whole_auto_model <- model.matrix(~ pathology_group + Fetal_Sex + GSE_number + gestational_age, data = metadata) 
-DMR_whole_auto_annot <- cpg.annotate("array", combined_auto_beta, what = "Beta", arraytype = "450K", analysis.type = "differential", design = DMR_whole_auto_model, fdr = 0.5, coef = 2)
+DMR_whole_auto_annot <- cpg.annotate("array", combined_auto_beta, what = "Beta", arraytype = "450K", analysis.type = "differential", design = DMR_whole_auto_model, fdr = 0.05, coef = 2)
 DMR_whole_auto <- dmrcate(DMR_whole_auto_annot, lambda = 1000, C = 2)
 results_range_whole_auto <- extractRanges(DMR_whole_auto, genome = "hg19")
 results_range_whole_auto$diffmethylation[results_range_whole_auto$meandiff > 0.00 & results_range_whole_auto$HMFDR <0.05] <- "Trending Towards Increased Methylation"
@@ -66,7 +66,7 @@ results_range_whole_auto$diffmethylation[results_range_whole_auto$meandiff < 0.0
 results_range_whole_auto$diffmethylation[results_range_whole_auto$meandiff > 0.05 & results_range_whole_auto$HMFDR <0.05] <- "Increased Methylation"
 results_range_whole_auto$diffmethylation[results_range_whole_auto$meandiff < -0.05 & results_range_whole_auto$HMFDR <0.05] <- "Decreased Methylation"
 wholeauto_bio_sig<- subset(results_range_whole_auto[results_range_whole_auto$HMFDR <0.05 & (results_range_whole_auto$meandiff < -0.05 | results_range_whole_auto$meandiff > 0.05), ])
-write.csv(results_range_whole_auto, "DMR_whole_auto_0.50.csv")
+write.csv(results_range_whole_auto, "DMR_whole_auto_0.050.csv")
 results_range_whole_auto_data <- as.data.frame(results_range_whole_auto)
 
 #Plotting
@@ -99,6 +99,8 @@ whole_auto_KEGG_sig<- subset(whole_auto_KEGG[whole_auto_KEGG$FDR <0.05,])
 write.csv(whole_auto_GO, "whole_auto_GO.csv")
 write.csv(whole_auto_KEGG_sig, "whole_auto_KEGG_sig.csv")
 
+#Function version
+  
 DMR_Analysis <- function(beta, data){
   print("DMR_Analysis")
   if (identical(data, metadata)) {
@@ -108,7 +110,7 @@ DMR_Analysis <- function(beta, data){
   }  
   model_annot <- cpg.annotate("array", beta, what = "Beta", arraytype = "450K", analysis.type = "differential", design = model, fdr = 0.05, coef = 2)
 
-  dmr_model_auto <- dmrcate(model_annot, lambda=1000, C=2)}
+  dmr_model_auto <- dmrcate(model_annot, lambda=1000, C=2)
   results_ranges <- extractRanges(dmr_model_auto, genome = "hg19")
   results_ranges$diffmethylation[results_ranges$meandiff > 0.00 & results_ranges$HMFDR <0.05] <- "Trending Towards Increased Methylation"
   results_ranges$diffmethylation[results_ranges$meandiff < 0.00 & results_ranges$HMFDR <0.05] <- "Trending Towards Decreased Methylation"
@@ -143,7 +145,7 @@ DMR_Analysis <- function(beta, data){
   dev.off()
 
   print("DMR_GO_ENRICHMENT")
-  enrichment_GO <- goregion(results_ranges[1:100], all.cpg = rownames(model), collection = "GO", array.type = "450K")
+  enrichment_GO <- goregion(results_ranges[1:100], all.cpg = rownames(beta), collection = "GO", array.type = "450K")
   enrichment_GO <- enrichment_GO[order(enrichment_GO$P.DE),]
   filename_GO <- paste0(Bval_name, "_DMR_enrichment_GO.csv")
   write.csv(enrichment_GO, file = filename_GO)}
@@ -151,10 +153,10 @@ DMR_Analysis <- function(beta, data){
 
 
 whole_auto_DMR <- DMR_Analysis(combined_auto_beta, metadata)
-male_auto_DMR <- DMR_Analysis(M_auto_beta, male)
-male_X_DMR <- DMR_Analysis(M_X_beta, male)
-female_auto_DMR <- DMR_Analysis(F_auto_beta, female)
-female_X_DMR <- DMR_Analysis(F_X_beta, female)
+male_auto_DMR <- DMR_Analysis(M_auto_beta, males)
+male_X_DMR <- DMR_Analysis(M_X_beta, males)
+female_auto_DMR <- DMR_Analysis(F_auto_beta, females)
+female_X_DMR <- DMR_Analysis(F_X_beta, females)
 
 
 
