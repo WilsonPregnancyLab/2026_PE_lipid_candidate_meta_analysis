@@ -127,13 +127,13 @@ cell_table <- data.frame(type = rep(c('troph', 'strom', 'hof', 'endo', 'nRBC', '
                                sd(estF_PE_F$Endothelial), sd(estF_PE_M$Endothelial), sd(estF_CONT_F$Endothelial), sd(estF_CONT_M$Endothelial),
                                sd(estF_PE_F$nRBC), sd(estF_PE_M$nRBC), sd(estF_CONT_F$nRBC), sd(estF_CONT_M$nRBC),
                                sd(estF_PE_F$Syncytiotrophoblast), sd(estF_PE_M$Syncytiotrophoblast), sd(estF_CONT_F$Syncytiotrophoblast), sd(estF_CONT_M$Syncytiotrophoblast)),
-                         group = rep(c('IVFF','IVFM','SPONTF','SPONTM'), 6)
+                         group = rep(c('PE_F','PE_M','CONT_F','CONT_M'), 6)
 )
 
 png(filename = "./cell_decon_anova_adjFunnorm.png", height = 7.5, width = 10, units = "in", res = 750)
 ggplot(cell_table, aes(fill = group, y = u, x = type)) +
   geom_bar(position = 'dodge', stat = 'identity') +
-  scale_fill_manual(values = c("#E67000", "#0060B5","#F7D56E", "#8EC9FF")) +
+  scale_fill_manual(values = c("#C77CFF", "#F8766D","#00BFC4", "#7CAE00")) +
   geom_errorbar(aes(ymin = u-s, ymax = u+s), width = .2, position = position_dodge(0.9)) +
   theme_classic()
 dev.off()
