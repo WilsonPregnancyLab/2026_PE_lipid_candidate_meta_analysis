@@ -49,6 +49,7 @@ print(combined_manifest)
     Number of SNP type II probes: 40
 
 #Normalization (adjFunnorm), Background and dye bias correction with noob, mapping to genome, quantile extraction, normalization
+saveRDS(combined_RGset, file = "placmet_noNorm.RDS")
 placmet_adjFunnorm <- adjustedFunnorm(combined_RGset)
 saveRDS(placmet_adjFunnorm, file = "placmet_adjFunnorm.RDS")
 
