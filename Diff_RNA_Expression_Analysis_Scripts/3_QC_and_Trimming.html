@@ -1,0 +1,41 @@
+#identify input and output directories we want to save quality control files (.HTML) (here, based on platform type)
+fastq_sets=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE255126/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE279757 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE279757/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE186257/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE234729/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE218039/"
+
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NextSeq_2000/GSE204835/"
+
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_HiSeq_2000/GSE114691/"
+
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_HiSeq_4000/GSE143953/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_HiSeq_2500/GSE148241/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_HiSeq_2500/GSE203507/"
+)
+
+fastq_sets=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Illumina_NovaSeq_6000/GSE255126/")
+
+#Automate FASTQ file quality control
+for pair in "${fastq_sets[@]}"; do
+  # Split input and output
+  input_dir=$(echo "$pair" | cut -d' ' -f1)
+  output_dir=$(echo "$pair" | cut -d' ' -f2)
+
+  for fastq in "$input_dir"/*.fastq*; do
+    echo "  > Running FASTQC on: $fastq"
+    fastqc --outdir "$output_dir" -t 4 "$fastq"
+    echo "> Finished $fastq"
+  done
+  echo "Finished folder: $input_dir"
+done
+echo " All datasets complete."
+
+
+#run FASTQC by folder
+$RUN fastqc /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257/*fastq -o .
+
+
+
