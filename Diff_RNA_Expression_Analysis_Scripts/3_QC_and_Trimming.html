@@ -43,6 +43,8 @@ for pair in "${fastq_sets_1[@]}"; do
 done
 echo " All datasets complete."
 
+pip install multiqc
+multiqc . /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastQC
 
 
 ###FASTQ_SCREEN
@@ -87,7 +89,7 @@ fastq_sets_4=(
 #Run FASTQ_Screen
 CONFIG_PATH="/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastQ_Screen/FastQ-Screen-0.16.0/FastQ_Screen_Genomes/fastq_screen.conf"
 
-for pair in "${fastq_sets_2[@]}"; do
+for pair in "${fastq_sets_4[@]}"; do
   # Split input and output
   input_dir=$(echo "$pair" | cut -d' ' -f1)
   output_dir=$(echo "$pair" | cut -d' ' -f2)
@@ -100,4 +102,34 @@ for pair in "${fastq_sets_2[@]}"; do
   echo "Finished FASTQ Screen on folder: $input_dir"
 done
 echo " All datasets complete."
+
+
+
+
+
+#FASTP - Adapter Trimming
+
+wget http://opengene.org/fastp/fastp
+chmod a+x ./fastp
+
+#simple usage, -i indicates first input file in paired-end, -I indicates second input file in paired-end
+#fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h --failed_out /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/Failed_Reads
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
