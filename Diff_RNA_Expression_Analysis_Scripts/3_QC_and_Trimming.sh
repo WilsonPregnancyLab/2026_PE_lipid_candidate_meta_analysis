@@ -1,3 +1,7 @@
+!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
 ###FAST_QC
 
 
@@ -109,11 +113,55 @@ echo " All datasets complete."
 
 #FASTP - Adapter Trimming
 
+#identify input and output directories we want to save FASTQ Screen (.HTML) (here, based on platform type)
+fastq_sets_1=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE279757 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/")
+
+fastq_sets_2=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/")
+
+fastq_sets_3=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/")
+
+fastq_sets_4=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507 /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/"
+)
+
+
 wget http://opengene.org/fastp/fastp
 chmod a+x ./fastp
 
+##This script was adapted from Samantha Wilson's 01_fastp_bowtie2.sh script by KE
+module load parallel
+module load fastp/0.19.4
+
 #simple usage, -i indicates first input file in paired-end, -I indicates second input file in paired-end
 #fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h --failed_out /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/Failed_Reads
+
+##fastp- trimming the adapters and appending UMI to sample same
+## -i input of read 1
+## -I input of read 2
+## -o output of read 1
+## -O output of read 2
+## --linksm read 1 and read 2
+## fastp automatically gzips outputs
+
+#Samples with Single-Ends and need UMI removal (GSE204835) 
+parallel -j 6 --link "fastp -i /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835 -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming. --umi --umi_loc=per_read --umi_len=6 -- -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" ::: data/2019_SpikeInControl_data/*R1*fastq.gz ::: data/2019_SpikeInControl_data/*R2*fastq.gz
+
+#Samples with Single-Ends 
+
+
+#Samples with Paired-Ends 
+parallel -j 6 --link "fastp -i {1} -I {2} -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming.{1/} -O /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming.{2/} -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" ::: data/2019_SpikeInControl_data/*R1*fastq.gz ::: data/2019_SpikeInControl_data/*R2*fastq.gz
 
 
 
