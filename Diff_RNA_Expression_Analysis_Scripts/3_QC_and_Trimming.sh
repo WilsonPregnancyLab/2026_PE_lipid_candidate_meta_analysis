@@ -129,6 +129,8 @@ SE_input=(
 
 
 wget http://opengene.org/fastp/fastp
+wget https://github.com/envmodules/modules/releases/download/v5.5.0/modules-5.5.0.tar.gz
+tar -xzf modules-5.5.0.tar.gz
 chmod a+x ./fastp
 
 ##This script was adapted from Samantha Wilson's 01_fastp_bowtie2.sh script by KE
@@ -147,7 +149,7 @@ module load fastp/0.19.4
 ## fastp automatically gzips outputs
 
 #Samples with Single-Ends and need UMI removal (GSE204835) 
-parallel -j 6 --link "fastp -i /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/"*.fastq" -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming. --umi --umi_loc=per_read --umi_len=6 -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" 
+parallel -j 6 --link "fastp -i /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/"*.fastq" -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming. --umi --umi_loc=per_read --umi_len=6 -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.html" 
 
 #Samples with Single-Ends 
 parallel -j 6 --link "fastp -i "$SE_input"*.fastq" -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_ -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" 
