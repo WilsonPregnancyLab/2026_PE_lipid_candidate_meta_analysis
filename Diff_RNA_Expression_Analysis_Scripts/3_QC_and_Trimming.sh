@@ -135,7 +135,7 @@ chmod a+x ./fastp
 
 ##This script was adapted from Samantha Wilson's 01_fastp_bowtie2.sh script by KE
 module load parallel
-module load fastp/0.19.4
+module load fastp/0.23.4
 
 #simple usage, -i indicates first input file in paired-end, -I indicates second input file in paired-end
 #fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h --failed_out /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/Failed_Reads
@@ -149,13 +149,24 @@ module load fastp/0.19.4
 ## fastp automatically gzips outputs
 
 #Samples with Single-Ends and need UMI removal (GSE204835) 
-parallel -j 6 --link "fastp -i /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/"*.fastq" -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming. --umi --umi_loc=per_read --umi_len=6 -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.html" 
+parallel -j 6 'fastp -i {}  
+                      -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{/} --umi --umi_loc=per_read --umi_len=6 
+                      -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.json 
+                      -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
 
 #Samples with Single-Ends 
-parallel -j 6 --link "fastp -i "$SE_input"*.fastq" -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_ -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" 
+parallel -j 6 "fastp -i {}  
+                    -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{/}
+                    -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.json 
+                    -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.html" ::: $SE_input/*.fastq
 
 #Samples with Paired-Ends 
-parallel -j 6 --link "fastp -i {1} -I {2} -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{1/} -O /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{2/} -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" ::: "$PE_input"*_1*.fastq ::: "$PE_input"*_2*.fastq
+parallel -j 6 --link "fastp -i {1} 
+                            -I {2} 
+                            -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{1/} 
+                            -O /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{2/} 
+                            -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json 
+                            -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
 
 
 
