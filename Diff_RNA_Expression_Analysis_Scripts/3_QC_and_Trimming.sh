@@ -47,8 +47,7 @@ for pair in "${fastq_sets_1[@]}"; do
 done
 echo " All datasets complete."
 
-pip install multiqc
-multiqc . /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastQC
+
 
 
 ###FASTQ_SCREEN
@@ -113,29 +112,33 @@ echo " All datasets complete."
 
 #FASTP - Adapter Trimming
 
-#identify input and output directories we want to save FASTQ Screen (.HTML) (here, based on platform type)
+##identify input and output directories we want to save FASTQ Screen (.HTML) (here, based on platform type)
 PE_input=(
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE279757/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE148241/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953/")
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE279757"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953")
 
 SE_input=(
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE114691/"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507/")
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507")
 
-
+##Install fastp
 wget http://opengene.org/fastp/fastp
-wget https://github.com/envmodules/modules/releases/download/v5.5.0/modules-5.5.0.tar.gz
-tar -xzf modules-5.5.0.tar.gz
 chmod a+x ./fastp
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/fastp-0.23.4/bin:$PATH"' >> ~/.bashr
 
-##This script was adapted from Samantha Wilson's 01_fastp_bowtie2.sh script by KE
-module load parallel
-module load fastp/0.23.4
+##Install parallel
+wget http://ftpmirror.gnu.org/parallel/parallel-latest.tar.bz2
+tar -xvjf parallel-latest.tar.bz2
+cd parallel-20250722
+./configure --prefix=/workspace/lab/wilsonslab/eyerk/programs/parallel-20250722/
+make
+make install
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/parallel-20250722/bin:$PATH"' >> ~/.bashrc
 
 #simple usage, -i indicates first input file in paired-end, -I indicates second input file in paired-end
 #fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h --failed_out /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/Failed_Reads
@@ -148,26 +151,31 @@ module load fastp/0.23.4
 ## --linksm read 1 and read 2
 ## fastp automatically gzips outputs
 
-#Samples with Single-Ends and need UMI removal (GSE204835) 
-parallel -j 6 'fastp -i {}  
-                      -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{/} --umi --umi_loc=per_read --umi_len=6 
-                      -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.json 
-                      -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
+cd /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/
 
-#Samples with Single-Ends 
-parallel -j 6 "fastp -i {}  
-                    -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{/}
-                    -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.json 
-                    -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{/.}.html" ::: $SE_input/*.fastq
+###Samples with Single-Ends and need UMI removal (GSE204835) 
+parallel -j 2 'fastp -i {} -o ./trimmed_{/} --umi --umi_loc=per_read --umi_len=6  -j ./{/.}.json -h ./{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
 
-#Samples with Paired-Ends 
-parallel -j 6 --link "fastp -i {1} 
-                            -I {2} 
-                            -o /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{1/} 
-                            -O /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/trimmed_{2/} 
-                            -j /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.json 
-                            -h /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
+###Samples with Single-Ends 
+parallel -j 2 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: $SE_input/*.fastq
 
+###Samples with Paired-Ends 
+parallel -j 2 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
+
+
+
+#FASTQC - Post-trimming Quality Control
+
+cd /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/
+
+fastqc --outdir /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastQC_aftertrim/ -t 4 *.fastq
+echo " All datasets complete."
+
+
+
+#MultiQC - Consolidating FastQC Results Before and After Trimming, FastScreen and Fastp
+
+multiqc /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/
 
 
 
