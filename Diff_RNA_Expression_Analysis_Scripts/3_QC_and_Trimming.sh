@@ -119,11 +119,11 @@ PE_input=(
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953")
 
 SE_input=(
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241"
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507")
 
 ##Install fastp
@@ -154,13 +154,13 @@ echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/parallel-20250722/bi
 cd /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming/
 
 ###Samples with Single-Ends and need UMI removal (GSE204835) 
-parallel -j 2 'fastp -i {} -o ./trimmed_{/} --umi --umi_loc=per_read --umi_len=6  -j ./{/.}.json -h ./{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
+parallel -j 4 'fastp -i {} -o ./trimmed_{/} --umi --umi_loc=per_read --umi_len=6  -j ./{/.}.json -h ./{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
 
 ###Samples with Single-Ends 
-parallel -j 2 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: $SE_input/*.fastq
+parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: $SE_input/*.fastq
 
 ###Samples with Paired-Ends 
-parallel -j 2 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
+parallel -j 4 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
 
 
 
