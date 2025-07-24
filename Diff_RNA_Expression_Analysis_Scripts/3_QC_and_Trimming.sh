@@ -122,9 +122,22 @@ PE_input=(
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_4000/GSE143953")
 
+PE_fastqs_1=()
+PE_fastqs_2=()
+
+for dir in "${PE_input[@]}"; do
+  PE_fastqs_1+=("$dir"/*_1.fastq)
+  PE_fastqs_2+=("$dir"/*_2.fastq)
+done
+
 SE_input=(
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2000/GSE114691"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507")
+
+SE_fastqs=()
+for dir in "${SE_input[@]}"; do
+  SE_fastqs+=("$dir"/*.fastq)
+done
 
 ##Install fastp
 wget http://opengene.org/fastp/fastp
@@ -157,10 +170,16 @@ cd /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/Fast
 parallel -j 4 'fastp -i {} -o ./trimmed_{/} --umi --umi_loc=per_read --umi_len=6  -j ./{/.}.json -h ./{/.}.html' ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NextSeq_2000/GSE204835/*.fastq
 
 ###Samples with Single-Ends 
-parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: $SE_input/*.fastq
+parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE203507/*.fastq 
+
+parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: "${SE_fastqs[@]}"
+
+parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: $SE_input/*.fastq 
+
+
 
 ###Samples with Paired-Ends 
-parallel -j 4 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: $PE_input/*_1.fastq ::: $PE_input/*_2.fastq
+parallel -j 4 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: ${PE_fastqs_1[@]} ::: ${PE_fastqs_2[@]}
 
 
 
