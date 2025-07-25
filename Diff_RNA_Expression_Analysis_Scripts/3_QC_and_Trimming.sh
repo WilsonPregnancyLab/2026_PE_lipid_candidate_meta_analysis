@@ -114,6 +114,7 @@ echo " All datasets complete."
 
 ##identify input and output directories we want to save FASTQ Screen (.HTML) (here, based on platform type)
 PE_input=(
+  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE234729"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE218039"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_HiSeq_2500/GSE148241"
@@ -122,7 +123,7 @@ PE_input=(
 ###CHECK GSE186257 AFTER
 "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE255126"
   "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE279757"
-  "/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/raw_data/Illumina_NovaSeq_6000/GSE186257"
+
 
 PE_fastqs_1=()
 PE_fastqs_2=()
@@ -175,8 +176,7 @@ parallel -j 4 'fastp -i {} -o ./trimmed_{/} --umi --umi_loc=per_read --umi_len=6
 parallel -j 4 "fastp -i {} -o ./trimmed_{/} -j ./{/.}.json -h ./{/.}.html" ::: "${SE_fastqs[@]}"
 
 ###Samples with Paired-Ends 
-parallel -j 4 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: ${PE_fastqs_1[@]} ::: ${PE_fastqs_2[@]}
-
+parallel -j 2 --link "fastp -i {1} -I {2} -o ./trimmed_{1/}  -O ./trimmed_{2/} -j ./{1/.}.{2/.}.json -h ./{1/.}.{2/.}.html" ::: ${PE_fastqs_1[@]} ::: ${PE_fastqs_2[@]} --tmpdir /workspace/lab/wilsonslab/eyerk/temp
 
 
 #FASTQC - Post-trimming Quality Control
