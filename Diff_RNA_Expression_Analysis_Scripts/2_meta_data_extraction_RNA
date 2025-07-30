@@ -96,16 +96,17 @@ SRA_GSE186257 <- read.csv("SraRunTable_GSE186257.csv")
 SRA_GSE218039 <- read.csv("SraRunTable_GSE218039.csv")
 SRA_GSE204835 <- read.csv("SraRunTable_GSE204835.csv")
 SRA_GSE234729 <- read.csv("SraRunTable_GSE234729.csv")
+SRA_GSE279757 <- read.csv("SraRunTable_GSE279757.csv")
 SRA_list <- list (SRA_GSE255126, SRA_GSE114691, SRA_GSE148241, SRA_GSE143953, SRA_GSE203507, SRA_GSE186257, SRA_GSE218039, SRA_GSE204835, SRA_GSE234729, SRA_GSE279757)
 SRA_list_merge <- Reduce(function(x, y) merge(x, y, all=TRUE), SRA_list)
-metadata_list_merge <- merge(merged_metadata, SRA_list_merge[, c("Sample.Name", "Run", "BioProject", "BioSample", "SRA.Study")], by.x = "geo_accession", by.y = "Sample.Name", all.x = TRUE)
+metadata_list_merge <- merge(merged_metadata, SRA_list_merge[, c("Sample.Name", "Run", "BioProject", "BioSample", "SRA.Study", "LibraryLayout")], by.x = "geo_accession", by.y = "Sample.Name", all.x = TRUE)
 
 metadata_list_merge$disease_group <- coalesce(metadata_list_merge$"disease:ch1", metadata_list_merge$"disease group:ch1", metadata_list_merge$"subject status:ch1", metadata_list_merge$"disease state:ch1", metadata_list_merge$"treatment:ch1", metadata_list_merge$"preeclampsia:ch1", metadata_list_merge$"description", metadata_list_merge$"clinical group:ch1")
 metadata_list_merge$fetal_sex <- coalesce(metadata_list_merge$"assigned neonatal_sex:ch1", metadata_list_merge$"gender:ch1", metadata_list_merge$"Sex:ch1", metadata_list_merge$"fetal_sex:ch1")
 metadata_list_merge$gestational_age_weeks_days <- coalesce(metadata_list_merge$"gestational age:ch1", metadata_list_merge$"gestational age_at_delivery_(weeks.days):ch1")
 metadata_list_merge$maternal_ethnicity <- coalesce(metadata_list_merge$"maternal ethnicity:ch1", metadata_list_merge$"maternal_ancestry_self_report:ch1")
 
-metadata <- metadata_list_merge[, (names(metadata_list_merge) %in% c("geo_accession", "Run", "BioProject", "BioSample", "SRA.Study", "GSE_number", "source_name_ch1", "molecule_ch1", "platform_id", "instrument_model", "library_strategy", "title", "disease_group", "fetal_sex", "gestational_age_weeks_days", "maternal_ethnicity", "term.ch1", "sga:ch1", "cell.type:ch1", "rop:ch1", "age of_mother_(years):ch1"))]
+metadata <- metadata_list_merge[, (names(metadata_list_merge) %in% c("geo_accession", "Run", "BioProject", "BioSample", "SRA.Study", "LibraryLayout", "GSE_number", "source_name_ch1", "molecule_ch1", "platform_id", "instrument_model", "library_strategy", "title", "disease_group", "fetal_sex", "gestational_age_weeks_days", "maternal_ethnicity", "term.ch1", "sga:ch1", "cell.type:ch1", "rop:ch1", "age of_mother_(years):ch1"))]
 
 # Review content of metadata fields to exclude samples with wrong tissue or disease, or preterm
 metadata$exclude <- "keep"
