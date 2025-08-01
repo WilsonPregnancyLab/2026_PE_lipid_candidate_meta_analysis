@@ -52,14 +52,15 @@ STAR --runMode genomeGenerate --genomeDir ./genomeInd --genomeFastaFiles ./GRCh3
 
 #Step 3: Mapping Reads to Genome
 
+##Create new folder to save mapped files
 mkdir /path_for_mapped_files/
 
 for file in /path_of_trimmed_fastqs/*.fastq; do
-STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn ${file} --outSAMtype BAM SortedByCoordinate --outFileNamePrefix /path_for_mapped_files/
+STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn ${file} --outSAMtype BAM SortedByCoordinate --outFileNamePrefix /path_for_mapped_files/${file}; done
 
-
-
-
+##Create new folder to transfer just the BAM files
+mkdir /path_for_bam_files/
+mv /path_for_mappped_files/*.bam /path_for_bam_files/
 
 
 
