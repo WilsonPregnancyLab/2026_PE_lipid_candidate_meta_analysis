@@ -62,7 +62,7 @@ PE_trimmed_2=("$TRIM_DIR"/*_2.fastq)
 parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn {1} {2} --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_PE/${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
 
 for file in "$TRIM_DIR"/SE_reads/*.fastq; do
-base=$(basename "$file" .fastq) STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_SE/${file} done
+base=$(basename "$file" .fastq) STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_SE/${base} done
 
 ##Create new folder to transfer just the BAM files
 mkdir ./mapped_BAMs/PE_mapped_BAMs/
