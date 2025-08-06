@@ -190,7 +190,12 @@ echo " All datasets complete."
 
 #MultiQC - Consolidating FastQC Results Before and After Trimming, FastScreen and Fastp
 
-multiqc /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/
+pip install multiqc
+
+python3 -m multiqc --version
+
+python3 -m multiqc /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/multiqc_before_processing
+python3 -m multiqc /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/multiqc_after_processing
 
 
 
