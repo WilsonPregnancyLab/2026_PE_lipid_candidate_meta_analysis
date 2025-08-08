@@ -46,8 +46,7 @@ gunzip *.gz
 
 ##Generate Genome Index
 mkdir ./genomeInd
-STAR --runMode genomeGenerate --genomeDir ./genomeInd --genomeFastaFiles ./GRCh38.primary_assembly.genome.fa --sjdbGTFfile ./gencode.v48.primary_assembly.annotation.gtf --runThreadN 4
-
+STAR --runMode genomeGenerate --genomeDir ./genomeInd --genomeFastaFiles ./GRCh38.primary_assembly.genome.fa --sjdbGTFfile ./gencode.v48.primary_assembly.annotation.gtf --runThreadN 4 --sjdbOverhang 100 --sjdbGTFtagExonParentGene gene_id
 
 #Step 3: Mapping Reads to Genome
 
@@ -59,16 +58,12 @@ TRIM_DIR="/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_contr
 PE_trimmed_1=("$TRIM_DIR"/*_1.fastq)
 PE_trimmed_2=("$TRIM_DIR"/*_2.fastq)
 
-parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn {1} {2} --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_PE/${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
+parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn {1} {2} --sjdbGTFfile ./gencode.v48.primary_assembly.annotation.gtf --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_PE/${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
 
-for file in "$TRIM_DIR"/SE_reads/*.fastq; do
-base=$(basename "$file" .fastq) STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn "$file" --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_SE/${base} done
 
 ##Create new folder to transfer just the BAM files
 mkdir ./mapped_BAMs/PE_mapped_BAMs/
-mkdir ./mapped_BAMs/SE_mapped_BAMs/
 mv ./mapped_reads/mapped_PE/*.bam ./mapped_BAMs/PE_mapped_BAMs/
-mv ./mapped_reads/mapped_SE/*.bam ./mapped_BAMs/SE_mapped_BAMs/
 
 
 
