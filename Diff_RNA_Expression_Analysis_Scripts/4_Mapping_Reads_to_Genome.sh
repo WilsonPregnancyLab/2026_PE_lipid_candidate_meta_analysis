@@ -52,7 +52,6 @@ STAR --runMode genomeGenerate --genomeDir ./genomeInd --genomeFastaFiles ./GRCh3
 
 ##Create new folder to save mapped files
 mkdir ./mapped_reads/mapped_PE/
-mkdir ./mapped_reads/mapped_SE/
 TRIM_DIR="/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming"
 
 PE_trimmed_1=("$TRIM_DIR"/*_1.fastq)
@@ -62,9 +61,32 @@ parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --geno
 
 
 ##Create new folder to transfer just the BAM files
-mkdir ./mapped_BAMs/PE_mapped_BAMs/
-mv ./mapped_reads/mapped_PE/*.bam ./mapped_BAMs/PE_mapped_BAMs/
+mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/not_deduplicated_BAMS
+mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/deduplicated_BAMS
+mv ./mapped_reads/mapped_PE/*.bam /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/BAM_files/
 
+
+#Step 4: Deduplicate BAM files to assess and remove PCR artefact
+
+##Go to programs directory
+mkdir /workspace/lab/wilsonslab/eyerk/picard
+cd /workspace/lab/wilsonslab/eyerk/picard
+wget https://github.com/broadinstitute/picard/releases/download/3.4.0/picard.jar
+java -version
+java -jar /workspace/lab/wilsonslab/eyerk/picard/picard.jar -h
+
+cd /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/deduplicated_BAMS
+BAM_FILES=("/workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/BAM_files/"*.bam)
+ 
+##EstimateLibraryComplexity
+mkdir ./estlibcomplexity
+parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{.}_est_lib_complexity.csv" ::: "${BAM_FILES[@]}"
+
+##MarkDuplicates (locates and tags duplciate reads in BAM file)
+###output is new BAM file where duplicates are identified in SAM flags field for each read with hexadecimal value of 0x0400 (decimal value of 1024)
+###can identify type of duplicate (optical vs PCR) using DT tag
+
+parallel -j 4 "java -jar picard.jar MarkDuplicates I={1} O={.}_dedup.bam M={.}_dedup_metrics.csv --TAGGING_POLICY=All" ::: "${BAM_FILES[@]}"
 
 
 
