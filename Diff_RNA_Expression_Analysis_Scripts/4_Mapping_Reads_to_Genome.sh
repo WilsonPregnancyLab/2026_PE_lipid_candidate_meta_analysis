@@ -61,26 +61,36 @@ parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --geno
 
 
 ##Create new folder to transfer just the BAM files
-mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/not_deduplicated_BAMS
-mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/deduplicated_BAMS
-mv ./mapped_reads/mapped_PE/*.bam /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/BAM_files/
+mv /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/ /workspace/lab/wilsonslab/datalake-wilsonslab/
+mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs
+mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/deduplicated_BAMs
+mv /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/mapped_reads/mapped_PE/*.bam /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs
 
 
 #Step 4: Deduplicate BAM files to assess and remove PCR artefact
 
 ##Go to programs directory
-mkdir /workspace/lab/wilsonslab/eyerk/picard
-cd /workspace/lab/wilsonslab/eyerk/picard
+mkdir /workspace/lab/wilsonslab/eyerk/programs/picard
+cd /workspace/lab/wilsonslab/eyerk/programs/picard
 wget https://github.com/broadinstitute/picard/releases/download/3.4.0/picard.jar
 java -version
-java -jar /workspace/lab/wilsonslab/eyerk/picard/picard.jar -h
+java -jar /workspace/lab/wilsonslab/eyerk/programs/picard/picard.jar -h
+cd /workspace/lab/wilsonslab/eyerk/programs/java/
+wget 
+tar -xvjf
+cd parallel-20250722
+./configure --prefix=/workspace/lab/wilsonslab/eyerk/programs/parallel-20250722/
+make
+make install
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/fastp-0.23.4/bin:$PATH"' >> /workspace/.bashrc
 
-cd /workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/deduplicated_BAMS
-BAM_FILES=("/workspace/lab/wilsonslab/datalake-wilsonslab/2025_Lipid_PE/Diff_RNA_Expression/BAM_files/"*.bam)
- 
+cd /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/deduplicated_BAMs/
+BAM_FILES=("/workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs/"*.bam)
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/picard:$PATH"' >> ~/.bashrc
+
 ##EstimateLibraryComplexity
 mkdir ./estlibcomplexity
-parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{.}_est_lib_complexity.csv" ::: "${BAM_FILES[@]}"
+parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{/.}_est_lib_complexity.csv" ::: "${BAM_FILES[@]}"
 
 ##MarkDuplicates (locates and tags duplciate reads in BAM file)
 ###output is new BAM file where duplicates are identified in SAM flags field for each read with hexadecimal value of 0x0400 (decimal value of 1024)
