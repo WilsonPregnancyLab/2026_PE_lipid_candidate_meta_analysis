@@ -73,23 +73,24 @@ mv /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome
 mkdir /workspace/lab/wilsonslab/eyerk/programs/picard
 cd /workspace/lab/wilsonslab/eyerk/programs/picard
 wget https://github.com/broadinstitute/picard/releases/download/3.4.0/picard.jar
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/picard:$PATH"' >> ~/.bashrc
+
 java -version
 java -jar /workspace/lab/wilsonslab/eyerk/programs/picard/picard.jar -h
 cd /workspace/lab/wilsonslab/eyerk/programs/java/
-wget 
-tar -xvjf
-cd parallel-20250722
-./configure --prefix=/workspace/lab/wilsonslab/eyerk/programs/parallel-20250722/
-make
-make install
-echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/fastp-0.23.4/bin:$PATH"' >> /workspace/.bashrc
+wget wget https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.tar.gz
+tar -xvzf jdk-24_linux-x64_bin.tar.gz
+cd jdk-24.0.2
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/java/jdk-24.0.2/bin:$PATH"' >> /workspace/lab/wilsonslab/eyerk/.bashrc
+source ~/.bashrc
 
 cd /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/deduplicated_BAMs/
 BAM_FILES=("/workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs/"*.bam)
-echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/picard:$PATH"' >> ~/.bashrc
 
 ##EstimateLibraryComplexity
 mkdir ./estlibcomplexity
+cd ./estlibcomplexity
+mv /workspace/lab/wilsonslab/eyerk/programs/picard/picard.jar /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/estlibcomplexity/
 parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{/.}_est_lib_complexity.csv" ::: "${BAM_FILES[@]}"
 
 ##MarkDuplicates (locates and tags duplciate reads in BAM file)
