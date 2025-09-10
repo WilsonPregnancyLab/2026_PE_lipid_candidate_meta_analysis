@@ -91,7 +91,7 @@ BAM_FILES=("/workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candida
 mkdir ./estlibcomplexity
 cd ./estlibcomplexity
 mv /workspace/lab/wilsonslab/eyerk/programs/picard/picard.jar /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/estlibcomplexity/
-parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{/.}_est_lib_complexity.csv" ::: "${BAM_FILES[@]}"
+parallel -j 4 "java -jar picard.jar EstimateLibraryComplexity I={} O=./estlibcomplexity/{/.}_est_lib_complexity.txt" ::: "${BAM_FILES[@]}"
 
 ##MarkDuplicates (locates and tags duplciate reads in BAM file)
 ###output is new BAM file where duplicates are identified in SAM flags field for each read with hexadecimal value of 0x0400 (decimal value of 1024)
