@@ -59,15 +59,27 @@ PE_trimmed_2=("$TRIM_DIR"/*_2.fastq)
 
 parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn {1} {2} --sjdbGTFfile ./gencode.v48.primary_assembly.annotation.gtf --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_PE/${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
 
-
 ##Create new folder to transfer just the BAM files
 mv /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/ /workspace/lab/wilsonslab/datalake-wilsonslab/
 mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs
 mkdir /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/deduplicated_BAMs
 mv /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/mapped_reads/mapped_PE/*.bam /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/raw_BAMs
 
+#Step 4: Assess alignment quality
+python3 -m multiqc /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/markedduplicates_BAMs/mapped_PE/*_Log.final.out
 
-#Step 4: Deduplicate BAM files to assess and remove PCR artefact
+cd /workspace/lab/wilsonslab/eyerk/programs/
+mkdir ./qualimap
+cd ./qualimap
+wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip
+unzip qualimap_v2.3.zip
+echo 'export PATH="/workspace/lab/wilsonslab/eyerk/programs/qualimap/qualimap_v2.3:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+cd /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/alignment_qualimap/
+qualimap multi-bamqc -d /workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/genome_mapping/alignment_qualimap/qualimap_input_file.txt -outdir ./ -r
+
+#Step 5: Mark duplicates in BAM files to assess and remove PCR artefact
 
 ##Go to programs directory
 mkdir /workspace/lab/wilsonslab/eyerk/programs/picard
