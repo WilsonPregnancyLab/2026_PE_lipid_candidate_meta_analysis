@@ -52,12 +52,12 @@ STAR --runMode genomeGenerate --genomeDir ./genomeInd --genomeFastaFiles ./GRCh3
 
 ##Create new folder to save mapped files
 mkdir ./mapped_reads/mapped_PE/
-TRIM_DIR="/workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/quality_control/FastP_Trimming"
+TRIM_DIR="/workspace/lab/wilsonslab/datalake-wilsonslab/2025_RNA_Lipid_Candidate/quality_control/multiqc_after_processing/FastP_Trimming"
 
 PE_trimmed_1=("$TRIM_DIR"/*_1.fastq)
 PE_trimmed_2=("$TRIM_DIR"/*_2.fastq)
 
-parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ./genomeInd --readFilesIn {1} {2} --sjdbGTFfile ./gencode.v48.primary_assembly.annotation.gtf --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./mapped_reads/mapped_PE/${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
+parallel -j 4 --link ' base=$(basename {1} _1.fastq); STAR --runThreadN 4 --genomeDir ../genomeInd --readFilesIn {1} {2} --sjdbGTFfile ../gencode.v48.primary_assembly.annotation.gtf --outSAMtype BAM SortedByCoordinate --outFileNamePrefix ./${base}_ ' ::: "${PE_trimmed_1[@]}" ::: "${PE_trimmed_2[@]}"
 
 ##Create new folder to transfer just the BAM files
 mv /workspace/lab/wilsonslab/eyerk/2025_RNA_Lipid_Candidate/ /workspace/lab/wilsonslab/datalake-wilsonslab/
