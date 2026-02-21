@@ -4,7 +4,7 @@
 SRA_TOOLKIT_PATH="/workspace/lab/wilsonslab/eyerk/SRA_Toolkit/sratoolkit.3.2.1-alma_linux64/bin"
 $TEMP_DIR=""
 
-#directories we want to save FASTQ files (here, based on platform type)
+#make directories to save FASTQ files (here, based on platform type)
 FASTQ_DIR_NS6000_GSE255126="/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/Illumina_NovaSeq_6000/GSE186257/"
 FASTQ_DIR_NS6000_GSE279757="/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/Illumina_NovaSeq_6000/GSE234729/"
 FASTQ_DIR_NS6000_GSE186257="/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/Illumina_NovaSeq_6000/GSE186257/"
@@ -20,7 +20,7 @@ FASTQ_DIR_HS2500_GSE203507="/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_
 
 FASTQ_DIR_HS4000_GSE143953="/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/Illumina_HiSeq_4000/GSE143953/"
 
-#file names w/ accessions 
+#define the directory you saved the accession list and the corresponding directory the fastq files will be saved ("location/of/accession/list *space* $FASTQ_DIR")
 
 accession_sets=(
   "/workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/Illumina_NovaSeq_6000/SRR_Acc_List_GSE255126.txt $FASTQ_DIR_NS6000_GSE255126"
@@ -40,20 +40,22 @@ accession_sets=(
 
 
 #Automate accession file downloads
+
 for entry in "${accession_sets[@]}"; do
-  #Divide into file and output directory
+  #Divide into accession file and output directory
   accession_file=$(echo "$entry" | cut -d' ' -f1)
   output_dir=$(echo "$entry" | cut -d' ' -f2)
   
-  echo ">>> Processing accessions from: $accession_file"
+  echo ">>> Processing $accession_file"
 
   while read -r accession; do 
     echo " >>> Processing $accession"
     "$SRA_TOOLKIT_PATH/prefetch" --output-directory "$output_dir" "$accession"
+    # -t defines a directory where temporary files can be stored
     "$SRA_TOOLKIT_PATH/fasterq-dump" --split-files --outdir "$output_dir" -t /workspace/lab/wilsonslab/eyerk/raw_data/PE_RNA_seq_data/temp "$accession"
     echo ">>> Finished $accession"
   done < "$accession_file"
-  echo ">>> Completed processing file: $accession_file"
+  echo ">>> Completed $accession_file"
 
 done
-echo ">>> All batches complete"
+
