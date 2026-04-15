@@ -1,0 +1,73 @@
+# R Version - R4.4.1
+# Packages (Install)
+BiocManager::install("GEOquery", update = F)
+BiocManager::install("minfi", update =F)
+BiocManager::install("IlluminaHumanMethylation450kmanifest", update =F)
+BiocManager::install("IlluminaHumanMethylation450kanno.ilmn12.hg19", update =F)
+BiocManager::install("wateRmelon", update =F)
+
+# Packages (Run)
+library(minfi) #version 1.50.0
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19) #version 0.6.1
+library(IlluminaHumanMethylation450kmanifest) #version 0.4.0
+library(magrittr) #version 2.0.3
+library(wateRmelon) #version 2.10.0
+
+#Load Base Directories (each directory should have all red and green IDATs + one sample sheet as a .csv)
+baseDir98224 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE98224_untar_unzip")
+baseDir100197 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE100197_untar_unzip")
+baseDir125605 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE125605_untar_unzip")
+baseDir75196 <- ("/workspace/lab/wilsonslab/eyerk/2025_Lipid_Candidate_GSE_Info/raw_GSE_untar_unzip/GSE75196_untar_unzip")
+
+#Create targets 
+targets98224 <- read.metharray.sheet(baseDir98224)
+targets100197 <- read.metharray.sheet(baseDir100197)
+targets125605 <- read.metharray.sheet(baseDir125605)
+targets75196 <- read.metharray.sheet(baseDir75196)
+
+#Sex Prediction - Quality control 
+GSE98224_sexpredict_RGset <- read.metharray.exp(targets = targets98224, verbose = TRUE) #Read idats
+#converts Red/Green channel for an Illumina methylation array into methylation signal w/o normalization
+GSE98224_MetSet_raw <- preprocessRaw(GSE98224_sexpredict_RGset)
+#uses annotation package to map methylation array data to genome
+GSE98224_GMetSet_raw <- mapToGenome(GSE98224_MetSet_raw)
+#estimates sample sex based on methylation data
+GSE98224_sex <- getSex(GSE98224_GMetSet_raw)
+write.csv (GSE98224_sex,"GSE98224_sex.csv")
+# manually compared in excel
+
+GSE100197_sexpredict_RGset <- read.metharray.exp(targets = targets100197, verbose = TRUE) #Read idats
+GSE100197_MetSet_raw <- preprocessRaw(GSE100197_sexpredict_RGset) 
+GSE100197_GMetSet_raw <- mapToGenome(GSE100197_MetSet_raw)
+GSE100197_sex <- getSex(GSE100197_GMetSet_raw)
+write.csv (GSE100197_sex,"GSE100197_sex.csv")
+
+GSE75196_sexpredict_RGset <- read.metharray.exp(targets = targets75196, verbose = TRUE) #Read idats
+GSE75196_MetSet_raw <- preprocessRaw(GSE75196_sexpredict_RGset)
+GSE75196_GMetSet_raw <- mapToGenome(GSE75196_MetSet_raw)
+GSE75196_sex <- getSex(GSE75196_GMetSet_raw)
+write.csv (GSE75196_sex,"GSE75196_sex.csv")
+
+GSE125605_sexpredict_RGset <- read.metharray.exp(targets = targets125605, verbose = TRUE) #Read idats
+GSE125605_MetSet_raw <- preprocessRaw(GSE125605_sexpredict_RGset)
+GSE125605_GMetSet_raw <- mapToGenome(GSE125605_MetSet_raw)
+GSE125605_sex <- getSex(GSE125605_GMetSet_raw)
+write.csv (GSE125605_sex,"GSE125605_sex.csv")
+
+# set up a file to 
+GSE125605_predictedsex <- cbind("Sample_Name" = rownames(GSE125605_sex), GSE125605_sex)
+write.csv (GSE125605_predictedsex, "/workspace/lab/wilsonslab/eyerk/placental_methylation_data/sex_prediction/GSE125605_sexprediction_load.csv")
+
+#add predictedsex for GSE125605 to metadata sheet
+GSE125605_predictedsex <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/sex_prediction/GSE125605_sexprediction_load.csv")
+metadata_not_updated <- read.csv("/workspace/lab/wilsonslab/eyerk/placental_methylation_data/GSE_metadata/Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+metadata <- merge(metadata_not_updated, GSE125605_predictedsex[, c("Sample_Name", "Fetal_Sex")], by = "Sample_Name", all.x = TRUE)
+write.csv(metadata,"Metadata_Sheet_lipid_preeclampsia_excluded_removed.csv")
+
+#manually compared predicted and reported sex in excel
+
+#plot 
+colnames(GSE125605_sex)
+png("GSE125605_sex_plot.png", width = 800, height = 600)
+GSE125605_sex_plot <- plot(GSE125605_sex$xMed, GSE125605_sex$yMed, main="Scatter_Plot",xlab="x-axis", ylab="y-axis")
+dev.off()
