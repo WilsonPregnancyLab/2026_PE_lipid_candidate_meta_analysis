@@ -77,7 +77,12 @@ female_upset_list_clean <- lapply(female_upset_list, function(x) x[!is.na(x)])
 f_upset_table <- as.data.frame(fromList(female_upset_list_clean))
 all_gene_names <- unique(unlist(female_upset_list_clean))
 rownames(f_upset_table) <- all_gene_names
-head(f_upset_table) #RAB5C, nonbiosig = CSNK1D
+
+f_upset_table$overlap_count <- rowSums(f_upset_table)
+table(f_upset_table$overlap_count)
+f_upset_table[f_upset_table$overlap_count == 4, ] #NA
+
+
 
 # Male 
 DNAm_sig_M <- unique(DNAm_WG_auto_M$gene[DNAm_WG_auto_M$diffmethylation != "Not_Biologically_Significant"])
@@ -116,7 +121,12 @@ dev.off()
 m_upset_table <- as.data.frame(fromList(male_upset_list))
 all_gene_names_m <- unique(unlist(male_upset_list))
 rownames(m_upset_table) <- all_gene_names_m
-head(m_upset_table) #PDLIM2, SLC2A1
+
+m_upset_table$overlap_count <- rowSums(m_upset_table)
+table(m_upset_table$overlap_count)
+m_upset_table[m_upset_table$overlap_count == 5, ] #LZTS1, C8orf58
+
+
 
 #Dual Overlap Upset Plot
 # put image in ggplot2 object

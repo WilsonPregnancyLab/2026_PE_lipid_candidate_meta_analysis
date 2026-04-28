@@ -7,7 +7,21 @@ library(ggrepel)
 #Before Controlling for Batch Effects 
 #Load DESeqDataSet object from RNA DESeq Analysis (rerun first part of "8a_DESeq2_Lip_Candidate_differential_exp_analysis.R")
 #Colour each PCA by group, fetal-sex, and disease group
-vsd_Lip_RNA_batch_uncorrected <- vst(RNA_Lip_DESeq_auto, blind = FALSE)
+
+filt_read_counts_autosomes <- filt_read_counts[rownames(filt_read_counts) %in% autosomal_lipids$gene_id,]
+filt_read_counts_chrX <- filt_read_counts [rownames(filt_read_counts) %in% chrX_lipids$gene_id,]
+filt_read_counts_chrY <- filt_read_counts [rownames(filt_read_counts) %in% chrY_lipids$gene_id,]
+
+#Rownames in metadata match with colnames of filt_read_counts_ComBat, and in same order
+rownames(RNA_Metadata_ex_rem) <- RNA_Metadata_ex_rem$Run
+all(colnames(filt_read_counts_ComBat) %in% rownames(RNA_Metadata_ex_rem)) #TRUE
+all(colnames(filt_read_counts_ComBat) == rownames(RNA_Metadata_ex_rem)) #TRUE
+
+#Step 3: Construct DESeqDataSet object, removed "instrument" from design because confound perfectly with GSE_number
+RNA_WG_DESeq_auto_ucor <- DESeqDataSetFromMatrix(countData = filt_read_counts_autosomes, colData = RNA_Metadata_ex_rem, design = ~ disease_group + GSE_number + predicted_fetal_sex)
+
+#Plot PCA
+vsd_Lip_RNA_batch_uncorrected <- vst(RNA_WG_DESeq_auto_ucor, blind = FALSE)
 
 PCA_batch_uncorrected_study <- plotPCA(vsd_Lip_RNA_batch_uncorrected, intgroup = "GSE_number")
 PCA_batch_uncorrected_study_plot <- PCA_batch_uncorrected_study + 
@@ -24,7 +38,7 @@ PCA_batch_uncorrected_study_plot <- PCA_batch_uncorrected_study +
                aes(fill = group), 
                alpha = 0.25)
 png("./PCA_batch_uncorrected_study.png", height = 10, width = 18, units = "in", res = 300)
-grid.arrange(PCA_batch_uncorrected_study_plot, nrow = 1)
+print(PCA_batch_uncorrected_study_plot, nrow = 1)
 dev.off()
 
 PCA_batch_uncorrected_fetal_sex <- plotPCA(vsd_Lip_RNA_batch_uncorrected, intgroup = "predicted_fetal_sex")
@@ -66,16 +80,14 @@ dev.off()
 
 
 #After Controlling for Batch Effects 
+vsd_Lip_RNA_batch_corrected <- vst(RNA_WG_DESeq_auto, blind = FALSE)
+SV_numbers <- c("SV1", "SV2", "SV3", "SV4", "SV5", "SV6")
+sv_matrix <- as.matrix(metadata_combined [, colnames(metadata_combined) %in% SV_numbers])
 
-vst_Lip_RNA_batch_uncorrected_matrix <- assay(vsd_Lip_RNA_batch_uncorrected)
+batch_corrected_matrix <- limma::removeBatchEffect(assay(vsd_Lip_RNA_batch_corrected), covariates=sv_matrix, design = model.matrix(~disease_group + predicted_fetal_sex, data = metadata_combined))
+assay(vsd_Lip_RNA_batch_corrected) <- batch_corrected_matrix
 
-vst_Lip_RNA_batch_corrected <- limma::removeBatchEffect(vst_Lip_RNA_batch_uncorrected_matrix, batch=vsd_Lip_RNA_batch_uncorrected$GSE_number, batch2=vsd_Lip_RNA_batch_uncorrected$predicted_fetal_sex, design = model.matrix(~ vsd_Lip_RNA_batch_uncorrected$disease_group))
-
-vsd_Lip_RNA_batch_corrected <- vsd_Lip_RNA_batch_uncorrected
-
-assay(vsd_Lip_RNA_batch_corrected) <- vst_Lip_RNA_batch_corrected
-
-PCA_batch_corrected_study <- plotPCA(vsd_Lip_RNA_batch_corrected, intgroup="GSE_number")
+PCA_batch_corrected_study <- plotPCA(vsd_Lip_RNA_batch_corrected, intgroup="GSE_number", returnData = TRUE)
 PCA_batch_corrected_study_plot <- PCA_batch_corrected_study + 
     labs(title = "PCA of Batch Corrected RNA-Seq Data - Study") +
   theme_bw() +

@@ -270,18 +270,191 @@ write.csv(sig_pathways_F_M_DEG_M, '2025_M_chrX_enriched_lipid_pathways.csv')
 
 
 
+## Visualizing gene-density between sexes (controlling for batch effects)
+
+vsd_Lip_RNA_batch_uncorrected <- vst(RNA_Lip_DESeq_auto, blind = FALSE)
+
+vst_Lip_RNA_batch_uncorrected_matrix <- assay(vsd_Lip_RNA_batch_uncorrected)
+
+vst_Lip_RNA_batch_corrected <- limma::removeBatchEffect(vst_Lip_RNA_batch_uncorrected_matrix, batch=vsd_Lip_RNA_batch_uncorrected$GSE_number, design = model.matrix(~ vsd_Lip_RNA_batch_uncorrected$disease_group))
+
+norm_counts <- as.data.frame(vst_Lip_RNA_batch_corrected)
+
+
+#norm_counts <- counts(RNA_Lip_DESeq_auto, normalized=TRUE)
+t_norm_counts <- as.data.frame(t(norm_counts))
+t_norm_counts$fetal_sex <- RNA_Metadata_ex_rem$predicted_fetal_sex
+t_norm_counts$disease_group <- RNA_Metadata_ex_rem$disease_group
+H1.3 <- lipid_ensembl_list[lipid_ensembl_list$gene_symbol %in% "H1-3", ]
+cols <- list("ENSG00000124575.7", "fetal_sex", "disease_group")
+H1.3_counts <- t_norm_counts[,colnames(t_norm_counts) %in% cols]
+H1.3_counts$sex_disease <- paste(H1.3_counts$fetal_sex, H1.3_counts$disease_group, sep = "_")
+
+
+#uncorrected norm counts
+norm_counts_uncor <- counts(RNA_Lip_DESeq_auto, normalized=TRUE)
+t_norm_counts_uncor <- as.data.frame(t(norm_counts_uncor))
+t_norm_counts_uncor$fetal_sex <- RNA_Metadata_ex_rem$predicted_fetal_sex
+t_norm_counts_uncor$disease_group <- RNA_Metadata_ex_rem$disease_group
+H1.3 <- lipid_ensembl_list[lipid_ensembl_list$gene_symbol %in% "H1-3", ]
+cols <- list("ENSG00000124575.7", "fetal_sex", "disease_group")
+H1.3_counts_uncor <- t_norm_counts_uncor[,colnames(t_norm_counts_uncor) %in% cols]
+H1.3_counts_uncor$sex_disease <- paste(H1.3_counts_uncor$fetal_sex, H1.3_counts_uncor$disease_group, sep = "_")
+
+
+library(ggplot2)
+# Basic density
+library(plyr)
+mu <- ddply(H1.3_counts, "sex_disease", summarise, grp.mean=mean(ENSG00000124575.7))
+head(mu)
+
+density_H1.3 <- ggplot(H1.3_counts, aes(x=ENSG00000124575.7, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_3.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.3, nrow = 1)
+dev.off()
+
+## uncorrected
+mu <- ddply(H1.3_counts_uncor, "sex_disease", summarise, grp.mean=mean(ENSG00000124575.7))
+head(mu)
+
+density_H1.3_uncor <- ggplot(H1.3_counts_uncor, aes(x=ENSG00000124575.7, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_3_uncor.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.3_uncor, nrow = 1)
+dev.off()
+
+#H1-5
+H1.5 <- lipid_ensembl_list[lipid_ensembl_list$gene_symbol %in% "H1-5", ]
+cols <- list("ENSG00000184357.5", "fetal_sex", "disease_group")
+H1.5_counts <- t_norm_counts[,colnames(t_norm_counts) %in% cols]
+H1.5_counts$sex_disease <- paste(H1.5_counts$fetal_sex, H1.5_counts$disease_group, sep = "_")
+H1.5_counts_uncor <- t_norm_counts_uncor[,colnames(t_norm_counts_uncor) %in% cols]
+H1.5_counts_uncor$sex_disease <- paste(H1.5_counts_uncor$fetal_sex, H1.5_counts_uncor$disease_group, sep = "_")
+
+library(ggplot2)
+# Basic density
+library(plyr)
+mu <- ddply(H1.5_counts, "sex_disease", summarise, grp.mean=mean(ENSG00000184357.5))
+head(mu)
+
+density_H1.5 <- ggplot(H1.5_counts, aes(x=ENSG00000184357.5, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_5.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.5, nrow = 1)
+dev.off()
+
+## uncorrected
+mu <- ddply(H1.5_counts_uncor, "sex_disease", summarise, grp.mean=mean(ENSG00000184357.5))
+head(mu)
+
+density_H1.5_uncor <- ggplot(H1.5_counts_uncor, aes(x=ENSG00000184357.5, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_5_uncor.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.5_uncor, nrow = 1)
+dev.off()
+
+
+
+
+png("./RNA_density_plot_counts_H1_5.png", height = 6, width = 10, units = "in", res = 300)
+plotCounts(RNA_Lip_DESeq_auto, "ENSG00000184357.5", 
+           intgroup=c("disease_group", "GSE_number"), 
+           normalized=TRUE, 
+           main="DESeq2 Normalized Counts by Group+GSE")
+dev.off()
 
 
 
 
 
 
+##Same density plots but this time plotting the normalized values from the only M and only F analyses
+
+vsd_Lip_RNA_batch_uncorrected_F <- vst(RNA_Lip_DESeq_auto_F, blind = FALSE)
+
+vst_Lip_RNA_batch_uncorrected_matrix_F <- assay(vsd_Lip_RNA_batch_uncorrected_F)
+
+vst_Lip_RNA_batch_corrected_F <- limma::removeBatchEffect(vst_Lip_RNA_batch_uncorrected_matrix_F, batch=vsd_Lip_RNA_batch_uncorrected_F$GSE_number, design = model.matrix(~ vsd_Lip_RNA_batch_uncorrected_F$disease_group))
+
+norm_counts_F <- as.data.frame(vst_Lip_RNA_batch_corrected_F)
+
+vsd_Lip_RNA_batch_uncorrected_M <- vst(RNA_Lip_DESeq_auto_M, blind = FALSE)
+
+vst_Lip_RNA_batch_uncorrected_matrix_M <- assay(vsd_Lip_RNA_batch_uncorrected_M)
+
+vst_Lip_RNA_batch_corrected_M <- limma::removeBatchEffect(vst_Lip_RNA_batch_uncorrected_matrix_M, batch=vsd_Lip_RNA_batch_uncorrected_M$GSE_number, design = model.matrix(~ vsd_Lip_RNA_batch_uncorrected_M$disease_group))
+
+norm_counts_M <- as.data.frame(vst_Lip_RNA_batch_corrected_M)
+
+norm_counts_strat <- merge(norm_counts_F, norm_counts_M , by = "row.names")
+rownames(norm_counts_strat) <- norm_counts_strat$Row.names
+norm_counts_strat$Row.names <- NULL
 
 
+t_norm_counts_strat <- as.data.frame(t(norm_counts_strat))
+t_norm_counts_strat$fetal_sex <- RNA_Metadata_ex_rem$predicted_fetal_sex
+t_norm_counts_strat$disease_group <- RNA_Metadata_ex_rem$disease_group
+H1.3 <- lipid_ensembl_list[lipid_ensembl_list$gene_symbol %in% "H1-3", ]
+cols <- list("ENSG00000124575.7", "fetal_sex", "disease_group")
+H1.3_counts_strat <- t_norm_counts_strat[,colnames(t_norm_counts_strat) %in% cols]
+H1.3_counts_strat$sex_disease <- paste(H1.3_counts_strat$fetal_sex, H1.3_counts_strat$disease_group, sep = "_")
+
+mu <- ddply(H1.3_counts_strat, "sex_disease", summarise, grp.mean=mean(ENSG00000124575.7))
+head(mu)
+
+density_H1.3_strat <- ggplot(H1.3_counts_strat, aes(x=ENSG00000124575.7, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_3_strat.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.3_strat, nrow = 1)
+dev.off()
+
+#H1-5
+H1.5 <- lipid_ensembl_list[lipid_ensembl_list$gene_symbol %in% "H1-5", ]
+cols <- list("ENSG00000184357.5", "fetal_sex", "disease_group")
+H1.5_counts_strat <- t_norm_counts_strat[,colnames(t_norm_counts_strat) %in% cols]
+H1.5_counts_strat$sex_disease <- paste(H1.5_counts_strat$fetal_sex, H1.5_counts_strat$disease_group, sep = "_")
+
+library(ggplot2)
+# Basic density
+library(plyr)
+mu <- ddply(H1.5_counts_strat, "sex_disease", summarise, grp.mean=mean(ENSG00000184357.5))
+head(mu)
+
+density_H1.5_strat <- ggplot(H1.5_counts_strat, aes(x=ENSG00000184357.5, col = sex_disease)) + 
+  geom_density() + 
+  geom_vline(data=mu, aes(xintercept=grp.mean, color=sex_disease),
+             linetype="dashed")
+
+png("./RNA_density_H1_5_strat.png", height = 6, width = 10, units = "in", res = 300)
+grid.arrange(density_H1.5_strat, nrow = 1)
+dev.off()
 
 
+M_Lip_RNA_counts_uncorrected <- counts(RNA_Lip_DESeq_auto_M, normalized=TRUE)
 
+t_M_Lip_RNA_counts_uncorrected <- as.data.frame(t(M_Lip_RNA_counts_uncorrected))
+t_M_Lip_RNA_counts_uncorrected$fetal_sex <- Male_Samples$predicted_fetal_sex
+t_M_Lip_RNA_counts_uncorrected$disease_group <- Male_Samples$disease_group
 
+H1.5_counts_M_uncor <- t_M_Lip_RNA_counts_uncorrected[,colnames(t_M_Lip_RNA_counts_uncorrected) %in% cols]
+H1.5_counts_M_uncor$sex_disease <- paste(H1.5_counts_M_uncor$fetal_sex, H1.5_counts_M_uncor$disease_group, sep = "_")
 
-
-
+table(Female_Samples$disease_group, Female_Samples$GSE_number)
+table(Male_Samples$disease_group, Male_Samples$GSE_number)
+table(RNA_Metadata_ex_rem$disease_group, RNA_Metadata_ex_rem$GSE_number)

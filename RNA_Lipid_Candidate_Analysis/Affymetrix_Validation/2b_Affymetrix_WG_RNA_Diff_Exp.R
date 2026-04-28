@@ -208,7 +208,7 @@ linear_modeling(females, affy_matrix_auto_F, "affy_AvgExpres_auto_F.csv") #496 s
 linear_modeling(males, affy_matrix_auto_M, "affy_AvgExpres_auto_M.csv") #586 sig genes
 linear_modeling(females, affy_matrix_chrX_F, "affy_AvgExpres_chrX_F.csv") #14 sig genes
 linear_modeling(males, affy_matrix_chrX_M, "affy_AvgExpres_chrX_M.csv") #17 sig genes
-linear_modeling(males, affy_matrix_chrY_M, "affy_AvgExpres_chrY_M.csv") #0/10 sig genes
+#linear_modeling(males, affy_matrix_chrY_M, "affy_AvgExpres_chrY_M.csv") #0/10 sig genes
 
 
 
@@ -236,7 +236,7 @@ affy_results_auto_F <- read.csv("affy_results_auto_F.csv")
 affy_results_auto_M <- read.csv("affy_results_auto_M.csv")
 affy_results_chrX_F <- read.csv("affy_results_chrX_F.csv")
 affy_results_chrX_M <- read.csv("affy_results_chrX_M.csv")
-affy_results_chrY_M <- read.csv("affy_results_chrY_M.csv")
+#affy_results_chrY_M <- read.csv("affy_results_chrY_M.csv")
 
 
 #Whole data 
@@ -259,11 +259,11 @@ affy_results_chrX_M$Expression_Status[affy_results_chrX_M$logFC < 0.00 & affy_re
 affy_results_chrX_M$Expression_Status[affy_results_chrX_M$logFC > 1.00 & affy_results_chrX_M$adj.P.Val <0.05] <- "Increased Expression"
 affy_results_chrX_M$Expression_Status[affy_results_chrX_M$logFC < -1.00 & affy_results_chrX_M$adj.P.Val <0.05] <- "Decreased Expression"
 
-affy_results_chrY_M$Expression_Status <- "Not_Biologically_Significant"
-affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC > 0.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Trending Towards Increased Expression"
-affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC < 0.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Trending Towards Decreased Expression"
-affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC > 1.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Increased Expression"
-affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC < -1.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Decreased Expression"
+# affy_results_chrY_M$Expression_Status <- "Not_Biologically_Significant"
+# affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC > 0.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Trending Towards Increased Expression"
+# affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC < 0.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Trending Towards Decreased Expression"
+# affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC > 1.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Increased Expression"
+# affy_results_chrY_M$Expression_Status[affy_results_chrY_M$logFC < -1.00 & affy_results_chrY_M$adj.P.Val <0.05] <- "Decreased Expression"
 
 #Female Data 
 affy_results_auto_F$Expression_Status <- "Not_Biologically_Significant"
@@ -283,7 +283,7 @@ female_auto_sig <- subset(affy_results_auto_F[affy_results_auto_F$adj.P.Val <0.0
 male_auto_sig <- subset(affy_results_auto_M[affy_results_auto_M$adj.P.Val <0.05,]) #
 female_chrX_sig <- subset(affy_results_chrX_F[affy_results_chrX_F$adj.P.Val <0.05,]) #
 male_chrX_sig <- subset(affy_results_chrX_M[affy_results_chrX_M$adj.P.Val <0.05,]) #
-male_chrY_sig <- subset(affy_results_chrY_M[affy_results_chrY_M$adj.P.Val <0.05,]) #
+#male_chrY_sig <- subset(affy_results_chrY_M[affy_results_chrY_M$adj.P.Val <0.05,]) #
 
 #Volcano Plots "grey" (#no change in methylation), "#d02670"- (pink-Increased Expression), "#8a00c4"- (purple-Decreased Expression)
 
@@ -295,15 +295,15 @@ wholepop_auto <- ggplot(data = affy_auto_combined_sex, aes(x = logFC, y = -log10
         axis.title = element_text(size = 18)) +
   ylab("-log10(FDR)") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 12, by = 1), limits = c(0, 12)) +
+  scale_y_continuous(breaks = seq(0, 15, by = 1), limits = c(0, 15)) +
   scale_x_continuous(breaks = seq(-2.5, 2.5, by = 0.5), limits = c(-2.5, 2.5)) +
   geom_point(shape = 19, alpha = 0.3, size = 3) + 
   scale_color_manual(values = c("Decreased Expression" = "#8a00c4", "Increased Expression" = "#d02670", "Trending Towards Decreased Expression" = "grey", "Trending Towards Increased Expression" = "grey", "Not_Biologically_Significant" = "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +  
   geom_vline(xintercept = c(0), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75)
-  #geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50'  
+  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
+  geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
 
   
 affy_results_auto_M$siglabel <- ifelse(affy_results_auto_M$Expression_Status %in% c("Increased Expression", "Decreased Expression"), affy_results_auto_M$SYMBOL, NA)
@@ -313,7 +313,7 @@ male_auto <- ggplot(data = affy_results_auto_M, aes(x = logFC, y = -log10(adj.P.
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 18)) +
   xlab("log2FoldChange") +
-  scale_y_continuous(breaks = seq(0, 12, by = 1), limits = c(0, 12)) +
+  scale_y_continuous(breaks = seq(0, 15, by = 1), limits = c(0, 15)) +
   scale_x_continuous(breaks = seq(-2.5, 2.5, by = 0.5), limits = c(-2.5, 2.5)) +
   scale_color_manual(values = c("Decreased Expression" = "#8a00c4", "Increased Expression" = "#d02670", "Trending Towards Decreased Expression" = "grey", "Trending Towards Increased Expression" = "grey", "Not_Biologically_Significant" = "grey"),
                      guide = "none") +
@@ -331,14 +331,14 @@ female_auto <- ggplot(data = affy_results_auto_F, aes(x = logFC, y = -log10(adj.
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 18)) +
   xlab("log2FoldChange") +
-  scale_y_continuous(breaks = seq(0, 12, by = 1), limits = c(0, 12)) +
+  scale_y_continuous(breaks = seq(0, 15, by = 1), limits = c(0, 15)) +
   scale_x_continuous(breaks = seq(-2.5, 2.5, by = 0.5), limits = c(-2.5, 2.5)) +
   scale_color_manual(values = c("Decreased Expression" = "#8a00c4", "Increased Expression" = "#d02670", "Trending Towards Decreased Expression" = "grey", "Trending Towards Increased Expression" = "grey", "Not_Biologically_Significant" = "grey"),
                      guide = "none") +
     geom_point(shape = 19, alpha = 0.4, size = 3) +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_vline(xintercept = c(0), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) 
+  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
 
 
@@ -381,25 +381,25 @@ geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth 
   geom_vline(xintercept = c(0), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75)
 
-affy_results_chrY_M$siglabel <- ifelse(affy_results_chrY_M$Expression_Status %in% c("Increased Expression", "Decreased Expression"), affy_results_chrY_M$SYMBOL, NA)
-male_Y <- ggplot(data = affy_results_chrY_M, aes(x = logFC, y = -log10(adj.P.Val), col = Expression_Status)) +
-  geom_point(shape = 19, alpha = 0.4, size = 3) +
-  theme_bw() +
-  ylab(" ") +
-  theme(axis.text = element_text(size = 14),
-        axis.title = element_text(size = 18)) +
-  xlab("log2FoldChange") +
-  scale_y_continuous(breaks = seq(0, 7, by = 0.5), limits = c(0, 7)) +
-  scale_x_continuous(breaks = seq(-2.5, 2.5, by = 0.5), limits = c(-2.5, 2.5)) +
-  scale_color_manual(values = c("Decreased Expression" = "#8a00c4", "Increased Expression" = "#d02670", "Trending Towards Decreased Expression" = "grey", "Trending Towards Increased Expression" = "grey", "Not_Biologically_Significant" = "grey"),
-                     guide = "none") + 
-geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_vline(xintercept = c(0), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75)
+# affy_results_chrY_M$siglabel <- ifelse(affy_results_chrY_M$Expression_Status %in% c("Increased Expression", "Decreased Expression"), affy_results_chrY_M$SYMBOL, NA)
+# male_Y <- ggplot(data = affy_results_chrY_M, aes(x = logFC, y = -log10(adj.P.Val), col = Expression_Status)) +
+#   geom_point(shape = 19, alpha = 0.4, size = 3) +
+#   theme_bw() +
+#   ylab(" ") +
+#   theme(axis.text = element_text(size = 14),
+#         axis.title = element_text(size = 18)) +
+#   xlab("log2FoldChange") +
+#   scale_y_continuous(breaks = seq(0, 7, by = 0.5), limits = c(0, 7)) +
+#   scale_x_continuous(breaks = seq(-2.5, 2.5, by = 0.5), limits = c(-2.5, 2.5)) +
+#   scale_color_manual(values = c("Decreased Expression" = "#8a00c4", "Increased Expression" = "#d02670", "Trending Towards Decreased Expression" = "grey", "Trending Towards Increased Expression" = "grey", "Not_Biologically_Significant" = "grey"),
+#                      guide = "none") + 
+# geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
+#   geom_vline(xintercept = c(0), col = "black", linetype = "dashed", linewidth = 0.75) +
+#   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75)
 
 
-png("./XY_vol_RNA_affy_panel.png", height = 9, width = 20, units = "in", res = 300)
-grid.arrange(female_X, male_X, male_Y, nrow = 1)
+png("./X_vol_RNA_affy_panel.png", height = 9, width = 20, units = "in", res = 300)
+grid.arrange(female_X, male_X, nrow = 1)
 dev.off()
 
 

@@ -3,54 +3,20 @@
 
 # Code adapted from "An end to end workflow for differential gene expression using Affymetrix microarrays", (Klaus & Reisenauer 2023)
 
-BiocManager::install("maEndToEnd")
-
 #General Bioconductor packages
-    library(Biobase)
-    library(oligoClasses)
-     
-#Annotation and data import packages
-    library(ArrayExpress)
-    library(pd.hugene.1.0.st.v1)
-    library(hugene10sttranscriptcluster.db)
-     
-#Quality control and pre-processing packages
-    library(oligo)
-    library(arrayQualityMetrics)
-    library(gridExtra) #version 2.3
-    library(ggrepel) 
-
-     
-#Analysis and statistics packages
-    library(limma)
-    library(topGO)
-    library(ReactomePA)
-    library(clusterProfiler)
-     
-#Plotting and color options packages
-    library(gplots)
-    library(ggplot2)
-    library(geneplotter)
-    library(RColorBrewer)
-    library(pheatmap)
-    library(enrichplot)
-     
-#Formatting/documentation packages
-   #library(rmarkdown)
-   #library(BiocStyle)
-    library(dplyr)
-    library(tidyr)
-
-#Helpers:
-    library(stringr)
-    library(matrixStats)
-    library(genefilter)
-    library(openxlsx)
-   #library(devtools)
-
+library(GEOquery) #v.2.78.0
+library(oligo) #v.1.74.0
+library(Biobase) #v.2.70.0
+library(ggplot2) #v.4.0.2
+library(gridExtra) #v.2.3
+library(tidyr) #v.1.3.2
+library(arrayQualityMetrics) #v.3.66.0
+library(dplyr) #v.1.2.0
+library(AnnotationDbi) #v.1.72.0
+library(hugene10sttranscriptcluster.db) #v.8.8.0
 
 #Step 1: Download Dataset
-library(GEOquery)
+
 gse75010 <- getGEO('GSE75010', GSEMatrix = TRUE)
 
 # identify the columns you want to extract for your metadata sheet
@@ -152,8 +118,7 @@ row_medians_assayData <-
 RLE_data <- sweep(Biobase::exprs(affymetrix_set), 1, row_medians_assayData)
 
 RLE_data <- as.data.frame(RLE_data)
-RLE_data_gathered <- 
-  tidyr::gather(RLE_data, patient_array, log2_expression_deviation)
+RLE_data_gathered <- tidyr::gather(RLE_data, patient_array, log2_expression_deviation)
 
 png("./RLE_Affymetrix_Lip_PE.png", height = 10, width = 40, units = "in", res = 300)
 ggplot2::ggplot(RLE_data_gathered, aes(patient_array,

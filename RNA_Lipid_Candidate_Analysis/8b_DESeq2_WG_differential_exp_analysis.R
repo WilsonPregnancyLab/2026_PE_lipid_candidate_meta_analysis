@@ -9,7 +9,7 @@ library(dplyr)
 library(tidyverse)
 library(DESeq2)
 
-setwd("/workspace/lab/wilsonslab/datalake-wilsonslab/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun")
+setwd("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun/test")
 
 gtf_file <- "../2025_RNA_Lipid_Candidate/genome_mapping/gencode.v48.primary_assembly.annotation.gtf"
 gtf_data <- import(gtf_file)
@@ -43,9 +43,9 @@ excluded_GSE <- RNA_Lipid_Candidate_Metadata[RNA_Lipid_Candidate_Metadata$GSE_nu
 filt_read_counts <- read_counts[ , !colnames(read_counts) %in% excluded_GSE$Run]
 filt_read_counts <- filt_read_counts [, 7:ncol(filt_read_counts)]
 
-filt_read_counts_autosomes <- filt_read_counts [rownames(filt_read_counts) %in% autosomes$gene_id,]
-filt_read_counts_chrX <- filt_read_counts [rownames(filt_read_counts) %in% chrX$gene_id,]
-filt_read_counts_chrY <- filt_read_counts [rownames(filt_read_counts) %in% chrY$gene_id,]
+filt_read_counts_autosomes <- filt_read_counts[rownames(filt_read_counts) %in% autosomes$gene_id,]
+filt_read_counts_chrX <- filt_read_counts[rownames(filt_read_counts) %in% chrX$gene_id,]
+filt_read_counts_chrY <- filt_read_counts[rownames(filt_read_counts) %in% chrY$gene_id,]
 
 #Rownames in metadata match with colnames of filt_read_counts, and in same order
 rownames(RNA_Metadata_ex_rem) <- RNA_Metadata_ex_rem$Run
@@ -53,7 +53,7 @@ all(colnames(filt_read_counts) %in% rownames(RNA_Metadata_ex_rem)) #TRUE
 all(colnames(filt_read_counts) == rownames(RNA_Metadata_ex_rem)) #TRUE
 
 #Step 3: Construct DESeqDataSet object
-RNA_WG_DESeq_auto <- DESeqDataSetFromMatrix(countData = filt_read_counts_autosomes, colData = RNA_Metadata_ex_rem, design = ~ disease_group + GSE_number + predicted_fetal_sex)
+RNA_WG_DESeq_auto <- DESeqDataSetFromMatrix(countData = filt_read_counts_autosomes, colData = RNA_Metadata_ex_rem, design = ~ GSE_number + predicted_fetal_sex + disease_group)
 
 #Pre-filtering: removing rows with low gene counts, keeping rows that have at least 10 reads adding across all samples
 pre_filter <- rowSums(counts(RNA_WG_DESeq_auto)) >=10
@@ -71,26 +71,56 @@ RNA_WG_DESeq_auto_results <- merge(RNA_WG_DESeq_auto_results, ensembl_list[, c("
 RNA_WG_DESeq_auto_results <- RNA_WG_DESeq_auto_results[!is.na(RNA_WG_DESeq_auto_results$padj),]
 
 #Labels 
-RNA_WG_DESeq_auto_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Decreased_RNA_Expression"
-
+RNA_WG_DESeq_auto_results$Expression_Status <- "Not_Biologically_Significant" #25726
+RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #1758
+RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #1169
+RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Increased_RNA_Expression" #450
+RNA_WG_DESeq_auto_results$Expression_Status[RNA_WG_DESeq_auto_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_results$padj <0.05] <- "Decreased_RNA_Expression" #148
 
 write.csv(RNA_WG_DESeq_auto_results, "RNA_WG_DESeq_results_autosomes_combined_sex.csv")
+
+#Autosome Interaction-Term
+
+#Step 3: Construct DESeqDataSet object, removed "instrument" from design because confound perfectly with GSE_number
+RNA_WG_DESeq_auto_IT <- DESeqDataSetFromMatrix(countData = filt_read_counts_autosomes, colData = RNA_Metadata_ex_rem, design = ~ GSE_number + predicted_fetal_sex*disease_group)
+
+#Pre-filtering: removing rows with low gene counts, keeping rows that have at least 10 reads adding across all samples
+pre_filter <- rowSums(counts(RNA_WG_DESeq_auto_IT)) >=10
+RNA_WG_DESeq_auto_IT <- RNA_WG_DESeq_auto_IT[pre_filter,]
+
+#Set the factor level
+RNA_WG_DESeq_auto_IT$disease_group <- relevel(RNA_WG_DESeq_auto_IT$disease_group, ref = "Control")
+
+#Step 4: Run DESeq
+RNA_WG_DESeq_auto_IT <- DESeq(RNA_WG_DESeq_auto_IT)
+## Positive LFC means gene went up more in males, negative LFC means gene went up more in females
+RNA_WG_DESeq_auto_IT_results <- results(RNA_WG_DESeq_auto_IT, name="predicted_fetal_sexM.disease_groupPE")
+RNA_WG_DESeq_auto_IT_results <- as.data.frame(RNA_WG_DESeq_auto_IT_results)
+RNA_WG_DESeq_auto_IT_results <- merge(RNA_WG_DESeq_auto_IT_results, ensembl_list[, c("gene_id", "gene_name", "seqnames")], by.x = "row.names", by.y = "gene_id")
+RNA_WG_DESeq_auto_IT_results <- RNA_WG_DESeq_auto_IT_results[!is.na(RNA_WG_DESeq_auto_IT_results$padj),]
+
+RNA_WG_DESeq_auto_IT_results$Expression_Status <- "Not_Biologically_Significant" #4753
+RNA_WG_DESeq_auto_IT_results$Expression_Status[RNA_WG_DESeq_auto_IT_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_IT_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #0
+RNA_WG_DESeq_auto_IT_results$Expression_Status[RNA_WG_DESeq_auto_IT_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_IT_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #0
+RNA_WG_DESeq_auto_IT_results$Expression_Status[RNA_WG_DESeq_auto_IT_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_IT_results$padj <0.05] <- "Increased_RNA_Expression" #7
+RNA_WG_DESeq_auto_IT_results$Expression_Status[RNA_WG_DESeq_auto_IT_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_IT_results$padj <0.05] <- "Decreased_RNA_Expression" #7
+
+write.csv(RNA_WG_DESeq_auto_IT_results, "RNA_WG_DESeq_results_autosomes_combined_sex_IT.csv")
 
 #------------------------------------------------
 
 #Female-Specific Differential Expression Analysis, autosomes
 Female_Samples <- RNA_Metadata_ex_rem[RNA_Metadata_ex_rem$predicted_fetal_sex == "F",]
+rownames(Female_Samples) <- Female_Samples$Run
+filt_read_counts_F<- filt_read_counts[,colnames(filt_read_counts) %in% rownames(Female_Samples)]
 
-filt_read_counts_auto_F <- filt_read_counts_autosomes[, (colnames(filt_read_counts_autosomes) %in% rownames(Female_Samples))]
+filt_read_counts_auto_F <- filt_read_counts_F[rownames(filt_read_counts_F) %in% autosomes$gene_id,]
+filt_read_counts_chrX_F <- filt_read_counts_F[rownames(filt_read_counts_F) %in% chrX$gene_id,]
 
 all(colnames(filt_read_counts_auto_F) %in% rownames(Female_Samples)) #TRUE
 all(colnames(filt_read_counts_auto_F) == rownames(Female_Samples)) #TRUE
 
-RNA_WG_DESeq_auto_F <- DESeqDataSetFromMatrix(countData = filt_read_counts_auto_F, colData = Female_Samples, design = ~ disease_group + GSE_number)
+RNA_WG_DESeq_auto_F <- DESeqDataSetFromMatrix(countData = filt_read_counts_auto_F, colData = Female_Samples, design = ~ GSE_number + disease_group)
 
 pre_filter <- rowSums(counts(RNA_WG_DESeq_auto_F)) >=10
 RNA_WG_DESeq_auto_F <- RNA_WG_DESeq_auto_F[pre_filter,]
@@ -105,25 +135,21 @@ RNA_WG_DESeq_auto_F_results <- merge(RNA_WG_DESeq_auto_F_results, ensembl_list[,
 RNA_WG_DESeq_auto_F_results <- RNA_WG_DESeq_auto_F_results[!is.na(RNA_WG_DESeq_auto_F_results$padj),]
 
 #Labels 
-RNA_WG_DESeq_auto_F_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Decreased_RNA_Expression"
+RNA_WG_DESeq_auto_F_results$Expression_Status <- "Not_Biologically_Significant" #27249
+RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #840
+RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #678
+RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Increased_RNA_Expression" #336
+RNA_WG_DESeq_auto_F_results$Expression_Status[RNA_WG_DESeq_auto_F_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_F_results$padj <0.05] <- "Decreased_RNA_Expression" #193
 
 write.csv(RNA_WG_DESeq_auto_F_results, "RNA_WG_DESeq_results_autosomes_F.csv")
 
 
 #Female-Specific Differential Expression Analysis, chrX
 
-Female_Samples <- RNA_Metadata_ex_rem[RNA_Metadata_ex_rem$predicted_fetal_sex == "F",]
-
-filt_read_counts_chrX_F <- filt_read_counts_chrX[, (colnames(filt_read_counts_chrX) %in% rownames(Female_Samples))]
-
 all(colnames(filt_read_counts_chrX_F) %in% rownames(Female_Samples)) #TRUE
 all(colnames(filt_read_counts_chrX_F) == rownames(Female_Samples)) #TRUE
 
-RNA_WG_DESeq_chrX_F <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrX_F, colData = Female_Samples, design = ~ disease_group + GSE_number)
+RNA_WG_DESeq_chrX_F <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrX_F, colData = Female_Samples, design = ~ GSE_number + disease_group)
 
 pre_filter <- rowSums(counts(RNA_WG_DESeq_chrX_F)) >=10
 RNA_WG_DESeq_chrX_F <- RNA_WG_DESeq_chrX_F[pre_filter,]
@@ -137,11 +163,11 @@ RNA_WG_DESeq_chrX_F_results <- as.data.frame(RNA_WG_DESeq_chrX_F_results)
 RNA_WG_DESeq_chrX_F_results <- merge(RNA_WG_DESeq_chrX_F_results, ensembl_list[, c("gene_id", "gene_name", "seqnames")], by.x = "row.names", by.y = "gene_id")
 RNA_WG_DESeq_chrX_F_results <- RNA_WG_DESeq_chrX_F_results[!is.na(RNA_WG_DESeq_chrX_F_results$padj),]
 
-RNA_WG_DESeq_chrX_F_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Decreased_RNA_Expression"
+RNA_WG_DESeq_chrX_F_results$Expression_Status <- "Not_Biologically_Significant" #799
+RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #35
+RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #26
+RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Increased_RNA_Expression" #12
+RNA_WG_DESeq_chrX_F_results$Expression_Status[RNA_WG_DESeq_chrX_F_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrX_F_results$padj <0.05] <- "Decreased_RNA_Expression" #12
 
 write.csv(RNA_WG_DESeq_chrX_F_results, "RNA_WG_DESeq_results_chrX_F.csv")
 
@@ -150,13 +176,17 @@ write.csv(RNA_WG_DESeq_chrX_F_results, "RNA_WG_DESeq_results_chrX_F.csv")
 #Male-Specific Differential Expression Analysis, autosomes
 
 Male_Samples <- RNA_Metadata_ex_rem[RNA_Metadata_ex_rem$predicted_fetal_sex == "M",]
+rownames(Male_Samples) <- Male_Samples$Run
+filt_read_counts_M<- filt_read_counts[,colnames(filt_read_counts) %in% rownames(Male_Samples)]
 
-filt_read_counts_auto_M <- filt_read_counts_autosomes[, (colnames(filt_read_counts_autosomes) %in% rownames(Male_Samples))]
+filt_read_counts_auto_M <- filt_read_counts_M[rownames(filt_read_counts_M) %in% autosomes$gene_id,]
+filt_read_counts_chrX_M <- filt_read_counts_M[rownames(filt_read_counts_M) %in% chrX$gene_id,]
+filt_read_counts_chrY_M <- filt_read_counts_M[rownames(filt_read_counts_M) %in% chrY$gene_id,]
 
 all(colnames(filt_read_counts_auto_M) %in% rownames(Male_Samples)) #TRUE
 all(colnames(filt_read_counts_auto_M) == rownames(Male_Samples)) #TRUE
 
-RNA_WG_DESeq_auto_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_auto_M, colData = Male_Samples, design = ~ disease_group + GSE_number)
+RNA_WG_DESeq_auto_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_auto_M, colData = Male_Samples, design = ~ GSE_number + disease_group)
 
 pre_filter <- rowSums(counts(RNA_WG_DESeq_auto_M)) >=10
 RNA_WG_DESeq_auto_M <- RNA_WG_DESeq_auto_M[pre_filter,]
@@ -170,25 +200,21 @@ RNA_WG_DESeq_auto_M_results <- as.data.frame(RNA_WG_DESeq_auto_M_results)
 RNA_WG_DESeq_auto_M_results <- merge(RNA_WG_DESeq_auto_M_results, ensembl_list[, c("gene_id", "gene_name", "seqnames")], by.x = "row.names", by.y = "gene_id")
 RNA_WG_DESeq_auto_M_results <- RNA_WG_DESeq_auto_M_results[!is.na(RNA_WG_DESeq_auto_M_results$padj),]
 
-RNA_WG_DESeq_auto_M_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Decreased_RNA_Expression"
+RNA_WG_DESeq_auto_M_results$Expression_Status <- "Not_Biologically_Significant" #19419
+RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #212
+RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #177
+RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Increased_RNA_Expression" #242
+RNA_WG_DESeq_auto_M_results$Expression_Status[RNA_WG_DESeq_auto_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_auto_M_results$padj <0.05] <- "Decreased_RNA_Expression" #64
 
 write.csv(RNA_WG_DESeq_auto_M_results, "RNA_WG_DESeq_results_autosomes_M.csv")
 
 
 #Male-Specific Differential Expression Analysis, chrX
 
-Male_Samples <- RNA_Metadata_ex_rem[RNA_Metadata_ex_rem$predicted_fetal_sex == "M",]
-
-filt_read_counts_chrX_M <- filt_read_counts_chrX[, (colnames(filt_read_counts_chrX) %in% rownames(Male_Samples))]
-
 all(colnames(filt_read_counts_chrX_M) %in% rownames(Male_Samples)) #TRUE
 all(colnames(filt_read_counts_chrX_M) == rownames(Male_Samples)) #TRUE
 
-RNA_WG_DESeq_chrX_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrX_M, colData = Male_Samples, design = ~ disease_group + GSE_number)
+RNA_WG_DESeq_chrX_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrX_M, colData = Male_Samples, design = ~ GSE_number + disease_group)
 
 pre_filter <- rowSums(counts(RNA_WG_DESeq_chrX_M)) >=10
 RNA_WG_DESeq_chrX_M <- RNA_WG_DESeq_chrX_M[pre_filter,]
@@ -202,11 +228,11 @@ RNA_WG_DESeq_chrX_M_results <- as.data.frame(RNA_WG_DESeq_chrX_M_results)
 RNA_WG_DESeq_chrX_M_results <- merge(RNA_WG_DESeq_chrX_M_results, ensembl_list[, c("gene_id", "gene_name", "seqnames")], by.x = "row.names", by.y = "gene_id")
 RNA_WG_DESeq_chrX_M_results <- RNA_WG_DESeq_chrX_M_results[!is.na(RNA_WG_DESeq_chrX_M_results$padj),]
 
-RNA_WG_DESeq_chrX_M_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Decreased_RNA_Expression"
+RNA_WG_DESeq_chrX_M_results$Expression_Status <- "Not_Biologically_Significant" #765
+RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #7
+RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #6
+RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Increased_RNA_Expression" #7
+RNA_WG_DESeq_chrX_M_results$Expression_Status[RNA_WG_DESeq_chrX_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrX_M_results$padj <0.05] <- "Decreased_RNA_Expression" #2
 
 write.csv(RNA_WG_DESeq_chrX_M_results, "RNA_WG_DESeq_results_chrX_M.csv")
 
@@ -220,7 +246,7 @@ filt_read_counts_chrY_M <- filt_read_counts_chrY[, (colnames(filt_read_counts_ch
 all(colnames(filt_read_counts_chrY_M) %in% rownames(Male_Samples)) #TRUE
 all(colnames(filt_read_counts_chrY_M) == rownames(Male_Samples)) #TRUE
 
-RNA_WG_DESeq_chrY_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrY_M, colData = Male_Samples, design = ~ disease_group + GSE_number)
+RNA_WG_DESeq_chrY_M <- DESeqDataSetFromMatrix(countData = filt_read_counts_chrY_M, colData = Male_Samples, design = ~ GSE_number + disease_group)
 
 pre_filter <- rowSums(counts(RNA_WG_DESeq_chrY_M)) >=10
 RNA_WG_DESeq_chrY_M <- RNA_WG_DESeq_chrY_M[pre_filter,]
@@ -234,18 +260,15 @@ RNA_WG_DESeq_chrY_M_results <- as.data.frame(RNA_WG_DESeq_chrY_M_results)
 RNA_WG_DESeq_chrY_M_results <- merge(RNA_WG_DESeq_chrY_M_results, ensembl_list[, c("gene_id", "gene_name", "seqnames")], by.x = "row.names", by.y = "gene_id")
 RNA_WG_DESeq_chrY_M_results <- RNA_WG_DESeq_chrY_M_results[!is.na(RNA_WG_DESeq_chrY_M_results$padj),]
 
-RNA_WG_DESeq_chrY_M_results$Expression_Status <- "Not_Biologically_Significant"
-RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression"
-RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression"
-RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Increased_RNA_Expression"
-RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Decreased_RNA_Expression"
+RNA_WG_DESeq_chrY_M_results$Expression_Status <- "Not_Biologically_Significant" #74
+RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange > 0.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Trending_Towards_Increased_RNA_Expression" #0
+RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange < 0.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Trending_Towards_Decreased_RNA_Expression" #0
+RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange > 1.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Increased_RNA_Expression" #0
+RNA_WG_DESeq_chrY_M_results$Expression_Status[RNA_WG_DESeq_chrY_M_results$log2FoldChange < -1.00 & RNA_WG_DESeq_chrY_M_results$padj <0.05] <- "Decreased_RNA_Expression" #0
 
 write.csv(RNA_WG_DESeq_chrY_M_results, "RNA_WG_DESeq_results_chrY_M.csv")
 
-
-
 #------------------------------------------------
-
 
 #Volcano Plots
 library(ggplot2) #version 3.5.1
@@ -262,8 +285,8 @@ combined_auto <- ggplot(data = RNA_WG_DESeq_auto_results, aes(x = log2FoldChange
         axis.title = element_text(size = 18)) +
   ylab("-log10(FDR)") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 6, by = 0.5), limits = c(0, 6)) +
-  scale_x_continuous(breaks = seq(-20, 20, by = 2), limits = c(-20, 20)) +
+  scale_y_continuous(breaks = seq(0, 19, by = 1), limits = c(0, 19)) +
+  scale_x_continuous(breaks = seq(-8, 8, by = 1), limits = c(-8, 8)) +
   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
@@ -278,8 +301,8 @@ female_auto <- ggplot(data = RNA_WG_DESeq_auto_F_results, aes(x = log2FoldChange
         axis.title = element_text(size = 18)) +
   ylab("") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 86, by = 5), limits = c(0, 85)) +
-  scale_x_continuous(breaks = seq(-20, 20, by = 2), limits = c(-20, 20)) +
+  scale_y_continuous(breaks = seq(0, 19, by = 1), limits = c(0, 19)) +
+  scale_x_continuous(breaks = seq(-8, 8, by = 1), limits = c(-8, 8)) +
   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
@@ -296,8 +319,8 @@ male_auto <- ggplot(data = RNA_WG_DESeq_auto_M_results, aes(x = log2FoldChange, 
         axis.title = element_text(size = 18)) +
   ylab("") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 260, by = 10), limits = c(0, 260)) +
-  scale_x_continuous(breaks = seq(-20, 20, by = 2), limits = c(-20, 20)) +
+  scale_y_continuous(breaks = seq(0, 19, by = 1), limits = c(0, 19)) +
+  scale_x_continuous(breaks = seq(-8, 8, by = 1), limits = c(-8, 8)) +
   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
@@ -313,13 +336,13 @@ female_X <- ggplot(data = RNA_WG_DESeq_chrX_F_results, aes(x = log2FoldChange, y
         axis.title = element_text(size = 18)) +
   ylab("-log10(FDR)") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 40, by = 1), limits = c(0, 40)) +
-  scale_x_continuous(breaks = seq(-6, 6, by = 1), limits = c(-6, 6)) +
+  scale_y_continuous(breaks = seq(0, 7, by = 0.5), limits = c(0, 7)) +
+  scale_x_continuous(breaks = seq(-6, 6, by = 0.5), limits = c(-6, 6)) +
   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) 
-  #geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
+  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
+  geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
 
 
 RNA_WG_DESeq_chrX_M_results$siglabel <- ifelse(RNA_WG_DESeq_chrX_M_results$Expression_Status %in% c("Increased_RNA_Expression", "Decreased_RNA_Expression"), RNA_WG_DESeq_chrX_M_results$gene_name, NA)
@@ -330,30 +353,30 @@ male_X <- ggplot(data = RNA_WG_DESeq_chrX_M_results, aes(x = log2FoldChange, y =
         axis.title = element_text(size = 18)) +
   ylab("") +
   xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 40, by = 1), limits = c(0, 40)) +
-  scale_x_continuous(breaks = seq(-6, 6, by = 1), limits = c(-6, 6)) +
+  scale_y_continuous(breaks = seq(0, 7, by = 0.5), limits = c(0, 7)) +
+  scale_x_continuous(breaks = seq(-6, 6, by = 0.5), limits = c(-6, 6)) +
   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
                      guide = "none") +
   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
-  geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) 
-  #geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
-
-
-RNA_WG_DESeq_chrY_M_results$siglabel <- ifelse(RNA_WG_DESeq_chrY_M_results$Expression_Status %in% c("Increased_RNA_Expression", "Decreased_RNA_Expression"), RNA_WG_DESeq_chrY_M_results$gene_name, NA)
-male_Y <- ggplot(data = RNA_WG_DESeq_chrY_M_results, aes(x = log2FoldChange, y = -log10(padj), col = Expression_Status)) +
-  geom_point(shape = 19, alpha = 0.3, size = 3) + 
-  theme_bw() +
-  theme(axis.text = element_text(size = 14),
-        axis.title = element_text(size = 18)) +
-  ylab("") +
-  xlab("log2FoldChange") + 
-  scale_y_continuous(breaks = seq(0, 22, by = 1), limits = c(0, 22)) +
-  scale_x_continuous(breaks = seq(-6, 6, by = 1), limits = c(-6, 6)) +
-  geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
-  scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
-                     guide = "none")  
-  #geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
+  geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
+
+
+# RNA_WG_DESeq_chrY_M_results$siglabel <- ifelse(RNA_WG_DESeq_chrY_M_results$Expression_Status %in% c("Increased_RNA_Expression", "Decreased_RNA_Expression"), RNA_WG_DESeq_chrY_M_results$gene_name, NA)
+# male_Y <- ggplot(data = RNA_WG_DESeq_chrY_M_results, aes(x = log2FoldChange, y = -log10(padj), col = Expression_Status)) +
+#   geom_point(shape = 19, alpha = 0.3, size = 3) + 
+#   theme_bw() +
+#   theme(axis.text = element_text(size = 14),
+#         axis.title = element_text(size = 18)) +
+#   ylab("") +
+#   xlab("log2FoldChange") + 
+#   scale_y_continuous(breaks = seq(0, 22, by = 1), limits = c(0, 22)) +
+#   scale_x_continuous(breaks = seq(-6, 6, by = 1), limits = c(-6, 6)) +
+#   geom_vline(xintercept = c(-1, 1), col = "black", linetype = "dashed", linewidth = 0.75) +
+#   geom_hline(yintercept = c(-log10(0.05)), col = "black", linetype = "dashed", linewidth = 0.75) +
+#   scale_color_manual(values = c("#8a00c4","#d02670","grey","grey", "grey"),
+#                      guide = "none")  
+#   #geom_text_repel(aes(label=siglabel), na.rm = TRUE, max.overlaps = Inf, size = 4, segment.colour = 'grey50')
 
 
 png("./WG_panel_autosomes_vol_RNAexp.png", height = 9, width = 25, units = "in", res = 300)
@@ -362,19 +385,18 @@ dev.off()
 
 png("./WG_combined_autosome_vol_RNAexp.png", height = 9, width = 15, units = "in", res = 300)
 grid.arrange(combined_auto, nrow = 1)
-#Warning messages:
-#   1: Removed 4 rows containing missing values or values outside the scale range
-# (`geom_point()`).
 dev.off()
 
 png("./WG_fetalsex_autosome_vol_RNAexp_panel.png", height = 9, width = 15, units = "in", res = 300)
 grid.arrange(female_auto, male_auto, nrow = 1)
 dev.off()
 
-png("./WG_XY_vol_RNAexp_panel.png", height = 9, width = 20, units = "in", res = 300)
-grid.arrange(female_X, male_X, male_Y, nrow = 1)
+png("./WG_chrX_vol_RNAexp_panel.png", height = 9, width = 20, units = "in", res = 300)
+grid.arrange(female_X, male_X, nrow = 1)
 dev.off()
 
-
-
+png("./WG_pval_dist_deseq.png", height = 9, width = 20, units = "in", res = 300)
+hist(RNA_WG_DESeq_auto_results$pval, breaks=50, col="skyblue", 
+     main="P-value Distribution", xlab="Unadjusted P-value")
+dev.off()
 

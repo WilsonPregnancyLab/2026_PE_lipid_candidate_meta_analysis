@@ -7,11 +7,11 @@ NCBI <- read.table('Generic_human_ncbiIds_noParents.an.txt.gz', sep = '\t', head
 
 # Whole Population Autosomes
 Lip_DESeq_auto_combined_sex <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_Lipid_Candidate/DESeq_rerun/RNA_Lip_DESeq_results_autosomes_combined_sex.csv")
-Lip_DESeq_auto_combined_sex_pval <- Lip_DESeq_auto_combined_sex[, c("gene_symbol", "pvalue")] #4944 genes
+Lip_DESeq_auto_combined_sex_pval <- Lip_DESeq_auto_combined_sex[, c("gene_symbol", "pvalue")] #4750 genes
 Lip_DESeq_auto_combined_sex_pval <- Lip_DESeq_auto_combined_sex_pval[!is.na(Lip_DESeq_auto_combined_sex_pval$pvalue),] #4944
-Lip_DESeq_auto_combined_sex_pval <- Lip_DESeq_auto_combined_sex_pval[!duplicated(Lip_DESeq_auto_combined_sex_pval$gene_symbol),] #4941 lipid genes investigated
+Lip_DESeq_auto_combined_sex_pval <- Lip_DESeq_auto_combined_sex_pval[!duplicated(Lip_DESeq_auto_combined_sex_pval$gene_symbol),] #4750 lipid genes investigated
 
-Lip_DESeq_auto_combined_sex_reference <- NCBI[NCBI$GeneSymbols %in% Lip_DESeq_auto_combined_sex_pval$gene_symbol, ] #4922 genes
+Lip_DESeq_auto_combined_sex_reference <- NCBI[NCBI$GeneSymbols %in% Lip_DESeq_auto_combined_sex_pval$gene_symbol, ] #4739 genes
 
 write.table(Lip_DESeq_auto_combined_sex_pval, "Lip_DESeq_auto_combined_sex_pval.txt", row.names = F, sep = '\t')
 write.table(Lip_DESeq_auto_combined_sex_reference, "Lip_DESeq_auto_combined_sex_reference.txt", row.names = F, sep = '\t')
@@ -53,7 +53,6 @@ devtools::install_github('PavlidisLab/ermineR')
 library(ermineR) #version 1.0.3.9000
 library(dplyr) #version 1.1.4
 library(ggplot2) #version 3.5.1
-library(rJava)
 
 Sys.setenv('JAVA_HOME' = '/usr/lib/jvm/java-21-openjdk/')
 
@@ -75,7 +74,7 @@ all_combinedpop_auto_pr_out <- precRecall(annotation = Lip_DESeq_auto_combined_s
 all_combinedpop_auto_pathway_analysis <- as.data.frame(all_combinedpop_auto_pr_out$results)
 sig_pathways_combinedpop_auto <- all_combinedpop_auto_pathway_analysis[all_combinedpop_auto_pathway_analysis$CorrectedPvalue < 0.05 & all_combinedpop_auto_pathway_analysis$Multifunctionality < 0.5,] #0
 sig_pathways_combinedpop_auto <- sig_pathways_combinedpop_auto %>% distinct(GeneMembers, .keep_all = T)
-write.csv(sig_pathways_combinedpop_auto, '2025_combinedpop_auto_enriched_lipid_pathways.csv')
+write.csv(all_combinedpop_auto_pathway_analysis, '2025_combinedpop_auto_enriched_lipid_pathways.csv')
 
 all_F_auto_pr_out <- precRecall(annotation = Lip_DESeq_auto_F_reference, 
                     scores = Lip_DESeq_auto_F_pval,
