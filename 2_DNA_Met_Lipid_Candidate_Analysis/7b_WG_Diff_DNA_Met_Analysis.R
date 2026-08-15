@@ -8,20 +8,6 @@ library(minfi) #version 1.50.0
 library(wateRmelon) #version 2.10.0
 library(dplyr) #version 1.1.4
 
-# #Construct Lipid Candidate Gene List
-# gtf_file <- "/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_Lipid_Candidate/genome_mapping/gencode.v48.primary_assembly.annotation.gtf"
-# gtf_data <- import(gtf_file)
-# gtf_df <- as.data.frame(gtf_data)
-# #gtf_df$gene_id <- sub("\\..*", "", gtf_df$gene_id)
-# gtf_df_dups_rem <- gtf_df[!duplicated(gtf_df$gene_id),]
-
-# lipid_gene_list <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_Lipid_Candidate/DESeq_analysis/lipid_genes_unique_P.csv")
-
-# setDT(lipid_gene_list)
-# setDT(gtf_df_dups_rem)
-# lipid_ensembl_gencode <- merge(x = lipid_gene_list, y = gtf_df_dups_rem[, c("gene_id", "gene_name", "seqnames")], by.x = "gene_symbol", by.y = "gene_name", all.x = TRUE)
-# lipid_ensembl_list <- lipid_ensembl_gencode[!is.na(lipid_ensembl_gencode$gene_id),]
-# write.csv(lipid_ensembl_gencode, "lipid_ensembl_gencode.csv")
 
 # # Load in probe annotation files and lipid candidate gene file 
 
@@ -30,7 +16,7 @@ full_annotation_price38$probes <- full_annotation_price38$CpG_ID
 # # Subset annotation_price38 file so that it only includes my lipid genes
 # lipid_candidate_probes_full <- annotation_price38[annotation_price38$gene %in% lipid_ensembl_list$gene_symbol, ] #113479 probes
 annotation_price38 <- full_annotation_price38[!duplicated(full_annotation_price38$CpG_ID),] #414086 probes
-# write.csv(lipid_candidate_probes, "lipid_candidate_probes.csv")
+lipid_candidate_probes <- read.csv("./lipid_candidate_probes.csv")
 
 #Probe annotations 
 chrXprobes <- subset(annotation_price38, annotation_price38$chr == "chrX") #10390 probes

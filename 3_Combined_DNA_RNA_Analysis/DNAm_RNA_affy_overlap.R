@@ -92,24 +92,14 @@ Overlap_Chart_WG(DNAm_WG_chrX_M, RNA_WG_chrX_M, affy_WG_chrX_M)
 
 
 
+# DNAm
 
+# c("gene", "Closest_TSS_gene_name", "probe", "gene_id", "logFC", "adj.P.Val", "deltaB", "region_overlap")
 
+# RNA-Seq
+# #Row.names = gene_id
+# c("Row.names","gene_symbol", "log2Fold", "padj", "Expression_Status")
 
-
-
-
-
-
-
-
-DNAm
-
-c("gene", "Closest_TSS_gene_name", "probe", "gene_id", "logFC", "adj.P.Val", "deltaB", "region_overlap")
-
-RNA-Seq
-#Row.names = gene_id
-c("Row.names","gene_symbol", "log2Fold", "padj", "Expression_Status")
-
-Affy
-#ENSEMBL = Row.names = gene_id
-c("ENSEMBL", "SYMBOL", "adj.P.Val", "logFC", "deltaExprs")
+# Affy
+# #ENSEMBL = Row.names = gene_id
+# c("ENSEMBL", "SYMBOL", "adj.P.Val", "logFC", "deltaExprs")

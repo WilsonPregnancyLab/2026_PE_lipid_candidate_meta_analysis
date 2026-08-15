@@ -212,4 +212,4 @@ rMATS_results_WG <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-anal
 AltSpl_DNAm_overlap_Chart_WG <- merge(DNAm_WG_auto_combined, rMATS_results_WG, by.x = "gene_id", by.y = "GeneID", all = TRUE)
 AltSpl_DNAm_overlap_Chart_WG_gene <- merge(DNAm_WG_auto_combined, rMATS_results_WG, by.x = "gene", by.y = "geneSymbol", all = TRUE)
 
-#NO SIG DNAm anyways heheehe
+#NO SIG DNAm anyways 

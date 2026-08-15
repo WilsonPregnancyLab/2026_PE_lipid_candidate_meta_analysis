@@ -92,70 +92,6 @@ res_df <- data.frame(
 write.csv(res_df, "Swish_isoform_combined.csv")
 
 
-# DTE_Swish <- function(df, covariate, file_suffix){
-# y <- scaleInfReps(y_se)
-# y <- labelKeep(y)
-# y <- y[mcols(y)$keep,]
-# set.seed(1)
-# y <- swish(df, x="disease_group", cov= covariate)
-# y <- addIds(y, "SYMBOL", gene=TRUE)
-
-# res <- mcols(y)
-# head(res[order(res$qvalue), ])
-# table(res$qvalue < 0.05)
-# res_df <- data.frame(
-#     Transcript_ID = rownames(res),
-#     Tx_ID = res$tx_id,
-#     Gene_ID = res$gene_id,
-#     Log10_Mean = res$log10mean,
-#     Stat = res$stat,
-#     Log2_FoldChg = res$log2FC,
-#     P_Value = res$pvalue,
-#     Q_Value = res$qvalue,
-#     Locfdr = res$locfdr,
-#     Gene_Symbol = as.character(res$SYMBOL)
-# )
-# filename <- paste0("Swish_isoform_", file_suffix, ".csv")
-# write.csv(res_df, filename)
-# }
-
-
-# DTE_Swish(y,"combined_cov","combined")
-
-
-# #Differential gene expression - combined_fetal_sex
-# gse <- summarizeToGene(se)
-# gy <- gse
-
-
-
-# DGE_Swish <- function(df, covariate, file_suffix){
-
-# gy <- scaleInfReps(gy)
-# gy <- labelKeep(gy)
-# gy <- gy[mcols(gy)$keep,]
-# set.seed(1)
-# gy <- swish(gy, x="disease_group", cov = "GSE_number")
-# gy <- addIds(gy, "SYMBOL", gene=TRUE)
-# table(mcols(gy)$qvalue < .05)
-
-# res_gy <- mcols(gy)
-# head(res_gy[order(res_gy$qvalue), ])
-# table(res_gy$qvalue < 0.05)
-# res_gy_df <- data.frame(
-#     Gene_ID = res_gy$gene_id,
-#     Stat = res_gy$stat,
-#     Log2_FoldChg = res_gy$log2FC,
-#     P_Value = res_gy$pvalue,
-#     Q_Value = res_gy$qvalue,
-#     Locfdr = res_gy$locfdr,
-#     Gene_Symbol = as.character(res_gy$SYMBOL))
-
-# }
-
-
-
-
 #Differential transcript expression - combined_fetal_sex_lipid
 y_lip <- scaleInfReps(y_lip_se)
 y_lip <- labelKeep(y_lip)
@@ -362,6 +298,6 @@ write.csv(rMATS_results, rMATS_filename)
 }
 
 rMATS_combine("output", "combined_sex")
-rMATS_combine("output_F", "F")
-rMATS_combine("output_M", "M")
+# rMATS_combine("output_F", "F")
+# rMATS_combine("output_M", "M")
 

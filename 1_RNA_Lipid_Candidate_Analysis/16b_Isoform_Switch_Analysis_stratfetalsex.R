@@ -298,10 +298,7 @@ exampleSwitchListAnalyzed_Lip_fet_sex <- analyzeAlternativeSplicing(
            exampleSwitchListAnalyzed_Lip_fet_sex$isoformFeatures$condition_2 == "PE_F"
 )
 
-# female_SwitchList <- analyzeAlternativeSplicing(
-#   switchAnalyzeRlist = female_SwitchList,
-#   quiet = FALSE
-# )
+
 
 saveRDS(exampleSwitchListAnalyzed_Lip_fet_sex, file = "./Isoform_DEXSeq_Lip/exampleSwitchListAnalyzed_Lip_fet_sex.rds")
 
@@ -660,7 +657,6 @@ library(dplyr)
 library(ggplot2)
 library(scales) # Needed for percentage formatting on the y-axis
 
-# 1. Read the CSVs and add a 'Group' column to identify each dataset
 Lip_combined_stacked <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2026_Alternative_Splicing/IsoformSwitchAnalyzeR/Lip_combined_sex_Isoform_Tables/Lip_combined_sex_transcript_DEG.csv") %>% 
   mutate(Group = "Lip_combined")
 
@@ -679,7 +675,6 @@ WG_F_stacked <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis
 WG_M_stacked <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2026_Alternative_Splicing/IsoformSwitchAnalyzeR/WG_M_Isoform_Tables/WG_M_transcript_DEG.csv") %>% 
   mutate(Group = "WG_M")
 
-# 2. Combine all dataframes into a single dataframe
 all_groups_combined <- bind_rows(
   Lip_combined_stacked, 
   Lip_F_stacked, 
@@ -689,13 +684,11 @@ all_groups_combined <- bind_rows(
   WG_M_stacked
 )
 
-# 3. Reset X-axis to your original fixed order
 all_groups_combined$Group <- factor(
   all_groups_combined$Group, 
   levels = c("Lip_combined", "Lip_F", "Lip_M", "WG_combined", "WG_F", "WG_M")
 )
 
-# 4. Explicitly set stacking order from bottom to top
 all_groups_combined$DTE_group <- factor(
   all_groups_combined$DTE_group, 
   levels = c(
@@ -706,10 +699,8 @@ all_groups_combined$DTE_group <- factor(
   )
 )
 
-# Initialize the PNG graphics device
 png(file = "./Percent_Transcripts_Driving_DEGs.png", height = 7, width = 10, units = "in", res = 300)
 
-# 5. Create the 100% stacked bar plot
 print(
   ggplot(all_groups_combined, aes(x = Group, fill = DTE_group)) +
     geom_bar(position = "fill") + 
@@ -727,7 +718,6 @@ print(
     )
 )
 
-# Close the file device
 dev.off()
 
 
