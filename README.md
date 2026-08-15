@@ -1,8 +1,8 @@
-This readme file was generated on 2025-02-18 by Kriesha Eyer.
+This readme file was generated on 2026-08-10 by Kriesha Eyer.
 
 # General Information
 
-Title of Dataset: 2024_PE_lipid_DNA_methylation
+Title of Dataset: 2026_PE_lipid_candidate_meta_analysis
 
 Author/Principal Investigator Information
 Name: Samantha L. Wilson
