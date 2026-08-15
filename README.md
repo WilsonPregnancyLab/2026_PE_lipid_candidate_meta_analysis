@@ -1,5 +1,11 @@
 This readme file was generated on 2026-08-10 by Kriesha Eyer.
 
+This repository contains all code for the publication "Transcriptional and Isoform-Level Regulation of Lipid Metabolism and the Whole Genome in Preeclamptic Placentas." This includes all code for differential RNA expression, isoform expression, isoform switching, alternative splicing, and DNA methylation analyses.
+
+If you think this code contributed to the work you are doing, consider citing it in your list of references. You can navigate to the publication and export the citation in different styles and formats by clicking the icon below.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21959333.svg)](https://doi.org/10.5281/zenodo.21959333)
+
 # General Information
 
 Title of Dataset: 2026_PE_lipid_candidate_meta_analysis
