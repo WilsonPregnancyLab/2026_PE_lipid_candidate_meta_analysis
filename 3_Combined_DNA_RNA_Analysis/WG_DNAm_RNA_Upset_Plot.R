@@ -29,6 +29,14 @@ RNA_WG_auto_M <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysi
 RNA_WG_auto_F <- RNA_WG_auto_F[!(RNA_WG_auto_F$gene_name %in% c("Y_RNA", "Metazoa_SRP")), ]
 RNA_WG_auto_M <- RNA_WG_auto_M[!(RNA_WG_auto_M$gene_name %in% c("Y_RNA", "Metazoa_SRP")), ]
 
+RNA_WG_auto_MF <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun/RNA_WG_DESeq_results_autosomes_IT.csv")
+RNA_WG_auto_F <- RNA_WG_auto_MF[RNA_WG_auto_MF$comparison == "F_PEvsF_Cont",]
+RNA_WG_auto_M <- RNA_WG_auto_MF[RNA_WG_auto_MF$comparison == "M_PEvsM_Cont",]
+RNA_WG_auto_comb <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun/RNA_WG_DESeq_results_autosomes_combined_sex.csv")
+RNA_WG_auto_F <- RNA_WG_auto_F[!(RNA_WG_auto_F$gene_name %in% c("Y_RNA", "Metazoa_SRP")), ]
+RNA_WG_auto_M <- RNA_WG_auto_M[!(RNA_WG_auto_M$gene_name %in% c("Y_RNA", "Metazoa_SRP")), ]
+RNA_WG_auto_comb <- RNA_WG_auto_comb[!(RNA_WG_auto_comb$gene_name %in% c("Y_RNA", "Metazoa_SRP")), ]
+
 affy_WG_auto_F <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun/affymetrix_validation_WG_rerun/affy_results_auto_F.csv")
 affy_WG_auto_M <- read.csv("/workspace/lab/wilsonslab/eyerk/PE_Lipid_Meta-analysis/2025_RNA_WG_rerun/affymetrix_validation_WG_rerun/affy_results_auto_M.csv")
 
@@ -153,8 +161,15 @@ RNA_sig_decreased_M <- unique(na.omit(RNA_WG_auto_M$gene_name[RNA_WG_auto_M$Expr
 RNA_biosig_increased_M <- unique(na.omit(RNA_WG_auto_M$gene_name[RNA_WG_auto_M$Expression_Status %in% c("Increased_RNA_Expression")]))
 RNA_biosig_decreased_M <- unique(na.omit(RNA_WG_auto_M$gene_name[RNA_WG_auto_M$Expression_Status %in% c("Decreased_RNA_Expression")]))
 
-female_male_overlap_list <- list("RNA_sig_increased_F" = RNA_sig_increased_F,"RNA_sig_decreased_F" = RNA_sig_decreased_F, "RNA_biosig_increased_F" = RNA_biosig_increased_F, "RNA_biosig_decreased_F" = RNA_biosig_decreased_F, "RNA_sig_increased_M" = RNA_sig_increased_M, "RNA_sig_decreased_M" = RNA_sig_decreased_M, "RNA_biosig_increased_M" = RNA_biosig_increased_M, "RNA_biosig_decreased_M" = RNA_biosig_decreased_M)
-female_male_biosig_overlap_list <- list("RNA_biosig_increased_F" = RNA_biosig_increased_F, "RNA_biosig_decreased_F" = RNA_biosig_decreased_F, "RNA_biosig_increased_M" = RNA_biosig_increased_M, "RNA_biosig_decreased_M" = RNA_biosig_decreased_M)
+RNA_sig_increased_comb <- unique(RNA_WG_auto_comb$gene_name[RNA_WG_auto_comb$Expression_Status %in% c("Increased_RNA_Expression", "Trending_Towards_Increased_RNA_Expression")])
+RNA_sig_decreased_comb <- unique(RNA_WG_auto_comb$gene_name[RNA_WG_auto_comb$Expression_Status %in% c("Decreased_RNA_Expression", "Trending_Towards_Decreased_RNA_Expression")])
+RNA_biosig_increased_comb <- unique(RNA_WG_auto_comb$gene_name[RNA_WG_auto_comb$Expression_Status %in% c("Increased_RNA_Expression")])
+RNA_biosig_decreased_comb <- unique(RNA_WG_auto_comb$gene_name[RNA_WG_auto_comb$Expression_Status %in% c("Decreased_RNA_Expression")])
+
+
+female_male_comb_overlap_list <- list("RNA_sig_increased_F" = RNA_sig_increased_F,"RNA_sig_decreased_F" = RNA_sig_decreased_F, "RNA_biosig_increased_F" = RNA_biosig_increased_F, "RNA_biosig_decreased_F" = RNA_biosig_decreased_F, "RNA_sig_increased_M" = RNA_sig_increased_M, "RNA_sig_decreased_M" = RNA_sig_decreased_M, "RNA_biosig_increased_M" = RNA_biosig_increased_M, "RNA_biosig_decreased_M" = RNA_biosig_decreased_M,
+                                    "RNA_sig_increased_comb" = RNA_sig_increased_comb, "RNA_sig_decreased_comb" = RNA_sig_decreased_comb, "RNA_biosig_increased_comb" = RNA_biosig_increased_comb, "RNA_biosig_decreased_comb" = RNA_biosig_decreased_comb)
+female_male_comb_biosig_overlap_list <- list("Upregulated_Genes_F" = RNA_biosig_increased_F, "Downregulated_Genes_F" = RNA_biosig_decreased_F, "Upregulated_Genes_M" = RNA_biosig_increased_M, "Downregulated_Genes_M" = RNA_biosig_decreased_M, "Upregulated_Genes_CS" = RNA_biosig_increased_comb, "Downregulated_Genes_CS" = RNA_biosig_decreased_comb)
 
 
 order <- c("RNA_sig_increased_F", "RNA_biosig_increased_F", "RNA_sig_decreased_F", "RNA_biosig_decreased_F", "RNA_sig_increased_M", "RNA_biosig_increased_M", "RNA_sig_decreased_M", "RNA_biosig_decreased_M")
@@ -170,21 +185,21 @@ upset(fromList(female_male_overlap_list),
       text.scale = 1.75)
 dev.off()
 
-order_biosig <- c("RNA_biosig_increased_F", "RNA_biosig_decreased_F", "RNA_biosig_increased_M", "RNA_biosig_decreased_M")
-png(file = "./Female_Male_RNA_Biosig_Overlap_UpSet_WG.png", height = 8, width = 7, units = "in", res = 300)
-upset(fromList(female_male_biosig_overlap_list), 
+order_biosig <- c("Upregulated_Genes_F", "Downregulated_Genes_F", "Upregulated_Genes_M", "Downregulated_Genes_M", "Upregulated_Genes_CS", "Downregulated_Genes_CS")
+png(file = "./Female_Male_Combined_RNA_Biosig_Overlap_UpSet.png", height = 8, width = 14, units = "in", res = 300)
+upset(fromList(female_male_comb_biosig_overlap_list), 
       sets = order_biosig,
       keep.order = TRUE,
       mainbar.y.label = "Number of Shared Genes",
-      nsets = 8, 
+      nsets = 6, 
       order.by = "freq", 
       sets.bar.color = "black", 
       main.bar.color = "black",
-      text.scale = 1.75)
+      text.scale = 2)
       
 dev.off()
-biosig_upset_table <- as.data.frame(fromList(female_male_biosig_overlap_list))
-all_gene_names_biosig <- unique(unlist(female_male_biosig_overlap_list))
+biosig_upset_table <- as.data.frame(fromList(female_male_comb_biosig_overlap_list))
+all_gene_names_biosig <- unique(unlist(female_male_comb_biosig_overlap_list))
 rownames(biosig_upset_table) <- all_gene_names_biosig
 head(biosig_upset_table) #NR4A1 (F increased, M decreased), ENSG00000308372 (M increased, F decreased)
 
